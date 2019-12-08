@@ -25,6 +25,7 @@
   let arcs = [];
   let data = [];
   let ageArcs = [];
+  let numCandidates = 0;
 
   let femaleMaleCountsMap = [FEMALE_LABEL, MALE_LABEL].reduce(
     (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
@@ -71,7 +72,7 @@
     const { Female, Male } = lodashGroupBy(data, d => d.gender);
     const countFemales = Female.length;
     const countMales = Male.length;
-    const numCandidates = countFemales + countMales;
+    numCandidates = countFemales + countMales;
     const countsMap = {};
 
     const totalAngle = Math.PI * 2;
@@ -255,6 +256,20 @@
               </tr>
             {/if}
           {/each}
+
+          {#if numCandidates > 0}
+            <td>
+              <strong>Total</strong>
+            </td>
+
+            <td>
+              <strong>{numCandidates}</strong>
+            </td>
+
+            <td>
+              <strong>100%</strong>
+            </td>
+          {/if}
         </tbody>
       </table>
     </div>
@@ -307,6 +322,20 @@
               </tr>
             {/if}
           {/each}
+
+          {#if numCandidates > 0}
+            <td>
+              <strong>Total</strong>
+            </td>
+
+            <td>
+              <strong>{numCandidates}</strong>
+            </td>
+
+            <td>
+              <strong>100%</strong>
+            </td>
+          {/if}
         </tbody>
       </table>
     </div>

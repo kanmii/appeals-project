@@ -1,5 +1,14 @@
 import { csvParse } from "d3-dsv";
 
+// KPI1:Number of beneficiaries supported by the project (of which women and youths%)
+// KPI2:Number of farmers adopting improved technologies with project support (disaggregated by gender)
+// KPI3:Number of farmers reached with agricultural assets under the project (disaggregated by gender)
+// KPI4: Total number of technologies, demonstrated and disseminated under the project (of which 50% climate and/or nutrition sensitive)
+
+// The table to take care of KPIs 1-3 can look like: Name(ibrahim akinola), Age(31), Gender(male/female),improved tech(yes/no),received agricultural assets(yes/no)
+
+// another table can take care of KPI4. May look like Technology Title(improved seedlings/fertilizer application/etc), Category(climate sensitive,nutrition sensitive,others)
+
 export const headerMapping = {
   NAME: "name",
   GENDER: "gender",
@@ -20,6 +29,9 @@ export async function getCSVData() {
     }, {});
 
     data.age = +data.age;
+    data.improvedTech = data.improvedTech === "Yes" ? true : false;
+    data.receivedAssets = data.receivedAssets === "Yes" ? true : false;
+    data.receivedTraining = data.receivedTraining === "Yes" ? true : false;
     return data;
   });
 }
