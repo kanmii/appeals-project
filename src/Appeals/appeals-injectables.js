@@ -19,6 +19,9 @@ export const headerMapping = {
   "RECEIVED TRAINING": "receivedTraining"
 };
 
+export const GENDER_FEMALE_DATA = "Female";
+export const GENDER_MALE_DATA = "Male";
+
 export async function getCSVData() {
   const rawBinaries = await fetch("/lagos-appeals.csv");
   const textData = await rawBinaries.text();

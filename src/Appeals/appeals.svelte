@@ -2,14 +2,20 @@
   import { onMount } from "svelte";
   import { arc } from "d3-shape";
   import { scaleLinear as d3ScaleLinear } from "d3-scale";
-  import lodashGroupBy from "lodash/groupBy";
   import { headerMapping } from "./appeals-injectables.js";
+  import {
+    FEMALE_LABEL,
+    MALE_LABEL,
+    CHILDREN_LABEL,
+    ADULT_LABEL,
+    YOUTH_LABEL,
+    getBarD3Helpers,
+    computeBars,
+    computeDistributions,
+    computeGenderCategoryArcsAndData,
+    computeAgeDistributionArcsAndData
+  } from "./appeals-utils";
 
-  const FEMALE_LABEL = "Female";
-  const MALE_LABEL = "Male";
-  const YOUTH_LABEL = "Youth";
-  const ADULT_LABEL = "Adult";
-  const CHILDREN_LABEL = "Children";
   const arcGenerator = arc();
   const colorSchema = d3ScaleLinear().range([
     "#98abc5",
@@ -20,119 +26,74 @@
   ]);
   const PIE_TRANSLATE = 250;
   const PIE_LABEL_OFFSET = 50;
+  const barD3Helpers = getBarD3Helpers();
 
   export let fetchDataFn;
-  let arcs = [];
+  let genderDistributionArcs = [];
   let data = [];
-  let ageArcs = [];
-  let numCandidates = 0;
+  let ageDistributionArcs = [];
+  let totalBeneficiaries = 0;
 
-  let femaleMaleCountsMap = [FEMALE_LABEL, MALE_LABEL].reduce(
+  let genderDistributionData = [FEMALE_LABEL, MALE_LABEL].reduce(
     (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
     {}
   );
 
-  let ageDistributionCountsMap = [
-    YOUTH_LABEL,
-    ADULT_LABEL,
-    CHILDREN_LABEL
-  ].reduce((acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }), {});
+  let ageDistributionData = [YOUTH_LABEL, ADULT_LABEL, CHILDREN_LABEL].reduce(
+    (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
+    {}
+  );
 
   onMount(async () => {
     data = await fetchDataFn();
 
-    let countYouths = 0;
-    let countsAdults = 0;
-    let countsChildren = 0;
+    const distributions = computeDistributions(data);
+    totalBeneficiaries = distributions.totalBeneficiaries;
 
-    const ageDistributionMap = data.reduce(
-      (acc, d) => {
-        const { age } = d;
+    const {
+      femaleCount,
+      maleCount,
+      improvedTechFemaleCount,
+      improvedTechMaleCount,
+      youthCount,
+      adultCount,
+      childrenCount
+    } = distributions;
 
-        if (age < 18) {
-          ++countsChildren;
-          acc[CHILDREN_LABEL].push(d);
-        } else if (age < 41) {
-          ++countYouths;
-          acc[YOUTH_LABEL].push(d);
-        } else {
-          ++countsAdults;
-          acc[ADULT_LABEL].push(d);
-        }
+    colorSchema.domain([maleCount, femaleCount]);
 
-        return acc;
-      },
-      {
-        [YOUTH_LABEL]: [],
-        [ADULT_LABEL]: [],
-        [CHILDREN_LABEL]: []
-      }
-    );
-
-    const { Female, Male } = lodashGroupBy(data, d => d.gender);
-    const countFemales = Female.length;
-    const countMales = Male.length;
-    numCandidates = countFemales + countMales;
-    const countsMap = {};
-
-    const totalAngle = Math.PI * 2;
-    colorSchema.domain([countMales, countFemales]);
-    let startAngle = 0;
-
-    arcs = [
-      [countFemales, FEMALE_LABEL],
-      [countMales, MALE_LABEL]
-    ].map(([count, label]) => {
-      const fraction = count / numCandidates;
-      const percent = (fraction * 100).toFixed(2);
-      countsMap[label] = { count, percent };
-
-      const arcOption = {
-        innerRadius: 0,
-        outerRadius: 220,
-        startAngle: startAngle,
-        endAngle: startAngle += fraction * totalAngle
-      };
-
-      return {
-        d: arcGenerator(arcOption),
-        fill: colorSchema(count),
-        label: `${label} (${percent}%)`,
-        centroid: arcGenerator.centroid(arcOption)
-      };
+    const genderDistributionComputed = computeGenderCategoryArcsAndData({
+      arcGenerator,
+      colorSchema,
+      femaleCount,
+      maleCount,
+      totalBeneficiaries
     });
 
-    startAngle = 0;
-    const ageCountsMap = {};
+    genderDistributionData = genderDistributionComputed.genderDistributionData;
+    genderDistributionArcs = genderDistributionComputed.genderDistributionArcs;
 
-    ageArcs = [
-      [countYouths, YOUTH_LABEL],
-      [countsAdults, ADULT_LABEL],
-      [countsChildren, CHILDREN_LABEL]
-    ]
-      .filter(([count]) => count > 0)
-      .map(([count, label]) => {
-        const fraction = count / numCandidates;
-        const percent = (fraction * 100).toFixed(2);
-        ageCountsMap[label] = { count, percent };
+    const ageDistributionComputed = computeAgeDistributionArcsAndData({
+      youthCount,
+      adultCount,
+      childrenCount,
+      colorSchema,
+      arcGenerator,
+      totalBeneficiaries
+    });
+    ageDistributionData = ageDistributionComputed.ageDistributionData;
+    ageDistributionArcs = ageDistributionComputed.ageDistributionArcs;
 
-        const arcOption = {
-          innerRadius: 0,
-          outerRadius: 150,
-          startAngle: startAngle,
-          endAngle: startAngle += fraction * totalAngle
-        };
+    const bars = computeBars({
+      improvedTechFemaleCount,
+      improvedTechMaleCount,
+      totalBeneficiaries,
+      femaleCount,
+      maleCount,
+      ...barD3Helpers
+    });
 
-        return {
-          d: arcGenerator(arcOption),
-          fill: colorSchema(count),
-          label: `${label} (${percent}%)`,
-          centroid: arcGenerator.centroid(arcOption)
-        };
-      });
-
-    femaleMaleCountsMap = countsMap;
-    ageDistributionCountsMap = ageCountsMap;
+    console.log(bars.barData);
   });
 </script>
 
@@ -217,7 +178,7 @@
   <div class="chart-container gender-distribution">
     <svg width="500" height="500">
       <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
-        {#each arcs as arc}
+        {#each genderDistributionArcs as arc}
           <path d={arc.d} fill={arc.fill} stroke="white" />
 
           <!-- label -->
@@ -247,7 +208,7 @@
         </thead>
 
         <tbody>
-          {#each Object.entries(femaleMaleCountsMap) as [k, { count, percent }]}
+          {#each Object.entries(genderDistributionData) as [k, { count, percent }]}
             {#if count > 0}
               <tr>
                 <td>{k}</td>
@@ -257,13 +218,13 @@
             {/if}
           {/each}
 
-          {#if numCandidates > 0}
+          {#if totalBeneficiaries > 0}
             <td>
               <strong>Total</strong>
             </td>
 
             <td>
-              <strong>{numCandidates}</strong>
+              <strong>{totalBeneficiaries}</strong>
             </td>
 
             <td>
@@ -283,7 +244,7 @@
   <div class="chart-container age-distribution">
     <svg width="500" height="500">
       <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
-        {#each ageArcs as arc}
+        {#each ageDistributionArcs as arc}
           <path d={arc.d} fill={arc.fill} stroke="white" />
 
           <!-- label -->
@@ -313,7 +274,7 @@
         </thead>
 
         <tbody>
-          {#each Object.entries(ageDistributionCountsMap) as [k, { count, percent }]}
+          {#each Object.entries(ageDistributionData) as [k, { count, percent }]}
             {#if count > 0}
               <tr>
                 <td>{k}</td>
@@ -323,13 +284,13 @@
             {/if}
           {/each}
 
-          {#if numCandidates > 0}
+          {#if totalBeneficiaries > 0}
             <td>
               <strong>Total</strong>
             </td>
 
             <td>
-              <strong>{numCandidates}</strong>
+              <strong>{totalBeneficiaries}</strong>
             </td>
 
             <td>
@@ -345,5 +306,4 @@
     Distribution of beneficiaries by
     <strong>age</strong>
   </h3>
-
 </div>
