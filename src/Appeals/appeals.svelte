@@ -7,17 +7,10 @@
 
   const FEMALE_LABEL = "Female";
   const MALE_LABEL = "Male";
-
-  export let fetchDataFn;
-  let arcs = [];
-  let data = [];
-  let femaleMaleCountsMap = [FEMALE_LABEL, MALE_LABEL].reduce(
-    (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
-    {}
-  );
-
+  const YOUTH_LABEL = "Youth";
+  const ADULT_LABEL = "Adult";
+  const CHILDREN_LABEL = "Children";
   const arcGenerator = arc();
-
   const colorSchema = d3ScaleLinear().range([
     "#98abc5",
     "#8a89a6",
@@ -25,9 +18,55 @@
     "#6b486b",
     "#a05d56"
   ]);
+  const PIE_TRANSLATE = 250;
+  const PIE_LABEL_OFFSET = 50;
+
+  export let fetchDataFn;
+  let arcs = [];
+  let data = [];
+  let ageArcs = [];
+
+  let femaleMaleCountsMap = [FEMALE_LABEL, MALE_LABEL].reduce(
+    (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
+    {}
+  );
+
+  let ageDistributionCountsMap = [
+    YOUTH_LABEL,
+    ADULT_LABEL,
+    CHILDREN_LABEL
+  ].reduce((acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }), {});
 
   onMount(async () => {
     data = await fetchDataFn();
+
+    let countYouths = 0;
+    let countsAdults = 0;
+    let countsChildren = 0;
+
+    const ageDistributionMap = data.reduce(
+      (acc, d) => {
+        const { age } = d;
+
+        if (age < 18) {
+          ++countsChildren;
+          acc[CHILDREN_LABEL].push(d);
+        } else if (age < 41) {
+          ++countYouths;
+          acc[YOUTH_LABEL].push(d);
+        } else {
+          ++countsAdults;
+          acc[ADULT_LABEL].push(d);
+        }
+
+        return acc;
+      },
+      {
+        [YOUTH_LABEL]: [],
+        [ADULT_LABEL]: [],
+        [CHILDREN_LABEL]: []
+      }
+    );
 
     const { Female, Male } = lodashGroupBy(data, d => d.gender);
     const countFemales = Female.length;
@@ -62,7 +101,37 @@
       };
     });
 
+    startAngle = 0;
+    const ageCountsMap = {};
+
+    ageArcs = [
+      [countYouths, YOUTH_LABEL],
+      [countsAdults, ADULT_LABEL],
+      [countsChildren, CHILDREN_LABEL]
+    ]
+      .filter(([count]) => count > 0)
+      .map(([count, label]) => {
+        const fraction = count / numCandidates;
+        const percent = (fraction * 100).toFixed(2);
+        ageCountsMap[label] = { count, percent };
+
+        const arcOption = {
+          innerRadius: 0,
+          outerRadius: 150,
+          startAngle: startAngle,
+          endAngle: startAngle += fraction * totalAngle
+        };
+
+        return {
+          d: arcGenerator(arcOption),
+          fill: colorSchema(count),
+          label: `${label} (${percent}%)`,
+          centroid: arcGenerator.centroid(arcOption)
+        };
+      });
+
     femaleMaleCountsMap = countsMap;
+    ageDistributionCountsMap = ageCountsMap;
   });
 </script>
 
@@ -105,6 +174,10 @@
     border-bottom: 1px solid #999;
     position: relative;
   }
+
+  .num-candidates {
+    max-width: 100px;
+  }
 </style>
 
 <div class="appeals">
@@ -140,18 +213,23 @@
 
   <h3 class="title">Raw Data</h3>
 
-  <div class="chart-container">
+  <div class="chart-container gender-distribution">
     <svg width="500" height="500">
-      <g transform="translate(250,250)">
+      <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
         {#each arcs as arc}
           <path d={arc.d} fill={arc.fill} stroke="white" />
 
           <!-- label -->
-          <text class="outline" x={arc.centroid[0] - 20} y={arc.centroid[1]}>
+          <text
+            class="outline"
+            x={arc.centroid[0] - PIE_LABEL_OFFSET}
+            y={arc.centroid[1]}>
             {arc.label}
           </text>
 
-          <text x={arc.centroid[0] - 20} y={arc.centroid[1]}>{arc.label}</text>
+          <text x={arc.centroid[0] - PIE_LABEL_OFFSET} y={arc.centroid[1]}>
+            {arc.label}
+          </text>
           <!-- label -->
         {/each}
       </g>
@@ -162,23 +240,81 @@
         <thead>
           <tr>
             <th>Gender</th>
-            <th>Number of candidates</th>
+            <th class="num-candidates">Number of candidates</th>
             <th>% Distribution</th>
           </tr>
         </thead>
 
         <tbody>
           {#each Object.entries(femaleMaleCountsMap) as [k, { count, percent }]}
-            <tr>
-              <td>{k}</td>
-              <td>{count}</td>
-              <td>{percent}</td>
-            </tr>
+            {#if count > 0}
+              <tr>
+                <td>{k}</td>
+                <td>{count}</td>
+                <td>{percent}</td>
+              </tr>
+            {/if}
           {/each}
         </tbody>
       </table>
     </div>
   </div>
 
-  <h3 class="title">Distribution of beneficiaries by gender</h3>
+  <h3 class="title">
+    Distribution of beneficiaries by
+    <strong>gender</strong>
+  </h3>
+
+  <div class="chart-container age-distribution">
+    <svg width="500" height="500">
+      <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
+        {#each ageArcs as arc}
+          <path d={arc.d} fill={arc.fill} stroke="white" />
+
+          <!-- label -->
+          <text
+            class="outline"
+            x={arc.centroid[0] - PIE_LABEL_OFFSET}
+            y={arc.centroid[1]}>
+            {arc.label}
+          </text>
+
+          <text x={arc.centroid[0] - PIE_LABEL_OFFSET} y={arc.centroid[1]}>
+            {arc.label}
+          </text>
+          <!-- label -->
+        {/each}
+      </g>
+    </svg>
+
+    <div class="data-summary-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Age Category</th>
+            <th class="num-candidates">Number of candidates</th>
+            <th>% Distribution</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {#each Object.entries(ageDistributionCountsMap) as [k, { count, percent }]}
+            {#if count > 0}
+              <tr>
+                <td>{k}</td>
+                <td>{count}</td>
+                <td>{percent}</td>
+              </tr>
+            {/if}
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h3 class="title">
+    Distribution of beneficiaries by
+    <strong>age</strong>
+  </h3>
+
 </div>
