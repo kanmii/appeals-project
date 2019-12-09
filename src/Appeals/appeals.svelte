@@ -13,7 +13,7 @@
     BAR_WIDTH,
     BAR_MARGINS
   } from "./appeals-utils";
-  import { selection as d3Selection } from "d3-selection";
+  import { select as d3Select } from "d3-selection";
 
   const PIE_TRANSLATE = 250;
   const PIE_LABEL_OFFSET = 50;
@@ -84,11 +84,9 @@
   });
 
   $: if (improvedTechBars.length) {
-    console.log(improvedTechBars);
-
     const { xAxis, yAxis } = barD3Helpers;
-    d3Selection(improvedTechBarsXAxisContainerDom).call(xAxis);
-    d3Selection(improvedTechBarsYAxisContainerDom).call(yAxis);
+    d3Select(improvedTechBarsXAxisContainerDom).call(xAxis);
+    d3Select(improvedTechBarsYAxisContainerDom).call(yAxis);
   }
 </script>
 
@@ -304,18 +302,18 @@
 
   <div class="chart-container improved-tech-distribution">
     <svg width={BAR_WIDTH} height={BAR_HEIGHT}>
-      <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`} />
+      <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`}>
 
-      <g
-        bind:this={improvedTechBarsXAxisContainerDom}
-        class="x-axis-container"
-        transform={`translate(0,${BAR_HEIGHT})`} />
+        <g
+          bind:this={improvedTechBarsXAxisContainerDom}
+          class="x-axis-container"
+          transform={`translate(0,${BAR_HEIGHT - BAR_MARGINS.top - BAR_MARGINS.bottom})`} />
 
-      <g
-        bind:this={improvedTechBarsYAxisContainerDom}
-        class="y-axis-container" />
+        <g
+          bind:this={improvedTechBarsYAxisContainerDom}
+          class="y-axis-container" />
 
-      <g />
+      </g>
     </svg>
   </div>
 

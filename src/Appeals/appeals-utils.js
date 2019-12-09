@@ -16,6 +16,7 @@ export const BAR_MARGINS = {
   right: 30,
   bottom: 20
 };
+
 export const FEMALE_LABEL = "Female";
 export const MALE_LABEL = "Male";
 export const YOUTH_LABEL = "Youth";
@@ -35,10 +36,15 @@ export const initialAgeDistributionData = [
 
 export function getBarD3Helpers() {
   const barYScale = d3ScaleLinear().range([BAR_HEIGHT, 0]);
-  const barXScale = d3ScaleBand().range([0, BAR_WIDTH]);
+
+  const barXScale = d3ScaleBand()
+    .range([0, BAR_WIDTH])
+    .padding(0.2);
+
   const colorScale = d3ScaleOrdinal()
     .domain([FEMALE_LABEL, MALE_LABEL])
     .range(["#e41a1c", "#377eb8", "#4daf4a"]);
+
   const xAxis = axisBottom(barXScale);
   const yAxis = axisLeft(barYScale);
   const arcGenerator = arc();
