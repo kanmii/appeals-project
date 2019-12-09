@@ -10,6 +10,12 @@ import { GENDER_FEMALE_DATA } from "./appeals-injectables.js";
 
 export const BAR_HEIGHT = 400;
 export const BAR_WIDTH = 400;
+export const BAR_MARGINS = {
+  top: 10,
+  left: 50,
+  right: 30,
+  bottom: 20
+};
 export const FEMALE_LABEL = "Female";
 export const MALE_LABEL = "Male";
 export const YOUTH_LABEL = "Youth";
@@ -68,7 +74,8 @@ export function computeBars(args) {
     barYScale,
     barXScale,
     femaleCount,
-    maleCount
+    maleCount,
+    colorScale
   } = args;
 
   barXScale.domain([IMPROVED_TECH_LABEL, NON_IMPROVED_TECH_LABEL]);
@@ -87,10 +94,32 @@ export function computeBars(args) {
     }
   ];
 
-  const barData = d3Stack().keys([FEMALE_LABEL, MALE_LABEL])(data);
+  const improvedTechBars = d3Stack()
+    .keys([FEMALE_LABEL, MALE_LABEL])(data)
+    .map(d => {
+      let i = 0;
+      const len = d.length;
+      const nextBars = [];
+
+      for (; i < len; i++) {
+        const nextBar = d[i];
+        const y0 = barYScale(nextBar[0]);
+        const y1 = barYScale(nextBar[1]);
+
+        nextBars.push({
+          x: barXScale(nextBar.data.improvementCategory),
+          y: y1,
+          height: y0 - y1,
+          width: barXScale.bandwidth(),
+          fill: colorScale(d.key)
+        });
+      }
+
+      return nextBars;
+    });
 
   return {
-    barData
+    improvedTechBars: improvedTechBars.flat()
   };
 }
 

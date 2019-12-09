@@ -8,8 +8,12 @@
     computeGenderCategoryArcsAndData,
     computeAgeDistributionArcsAndData,
     initialGenderDistributionData,
-    initialAgeDistributionData
+    initialAgeDistributionData,
+    BAR_HEIGHT,
+    BAR_WIDTH,
+    BAR_MARGINS
   } from "./appeals-utils";
+  import { selection as d3Selection } from "d3-selection";
 
   const PIE_TRANSLATE = 250;
   const PIE_LABEL_OFFSET = 50;
@@ -22,6 +26,9 @@
   let totalBeneficiaries = 0;
   let genderDistributionData = initialGenderDistributionData;
   let ageDistributionData = initialAgeDistributionData;
+  let improvedTechBars = [];
+  let improvedTechBarsXAxisContainerDom;
+  let improvedTechBarsYAxisContainerDom;
 
   onMount(async () => {
     data = await fetchDataFn();
@@ -73,8 +80,16 @@
       ...barD3Helpers
     });
 
-    console.log(bars.barData);
+    improvedTechBars = bars.improvedTechBars;
   });
+
+  $: if (improvedTechBars.length) {
+    console.log(improvedTechBars);
+
+    const { xAxis, yAxis } = barD3Helpers;
+    d3Selection(improvedTechBarsXAxisContainerDom).call(xAxis);
+    d3Selection(improvedTechBarsYAxisContainerDom).call(yAxis);
+  }
 </script>
 
 <style>
@@ -285,5 +300,27 @@
   <h3 class="title">
     Distribution of beneficiaries by
     <strong>age</strong>
+  </h3>
+
+  <div class="chart-container improved-tech-distribution">
+    <svg width={BAR_WIDTH} height={BAR_HEIGHT}>
+      <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`} />
+
+      <g
+        bind:this={improvedTechBarsXAxisContainerDom}
+        class="x-axis-container"
+        transform={`translate(0,${BAR_HEIGHT})`} />
+
+      <g
+        bind:this={improvedTechBarsYAxisContainerDom}
+        class="y-axis-container" />
+
+      <g />
+    </svg>
+  </div>
+
+  <h3 class="title">
+    Distribution of beneficiaries by
+    <strong>improved technology</strong>
   </h3>
 </div>
