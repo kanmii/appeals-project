@@ -3,6 +3,7 @@ import {
   scaleBand as d3ScaleBand,
   scaleOrdinal as d3ScaleOrdinal
 } from "d3-scale";
+import { arc } from "d3-shape";
 import { axisBottom, axisLeft } from "d3-axis";
 import { stack as d3Stack } from "d3-shape";
 import { GENDER_FEMALE_DATA } from "./appeals-injectables.js";
@@ -15,6 +16,17 @@ export const YOUTH_LABEL = "Youth";
 export const ADULT_LABEL = "Adult";
 export const CHILDREN_LABEL = "Children";
 
+export const initialGenderDistributionData = [FEMALE_LABEL, MALE_LABEL].reduce(
+  (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
+  {}
+);
+
+export const initialAgeDistributionData = [
+  YOUTH_LABEL,
+  ADULT_LABEL,
+  CHILDREN_LABEL
+].reduce((acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }), {});
+
 export function getBarD3Helpers() {
   const barYScale = d3ScaleLinear().range([BAR_HEIGHT, 0]);
   const barXScale = d3ScaleBand().range([0, BAR_WIDTH]);
@@ -23,13 +35,24 @@ export function getBarD3Helpers() {
     .range(["#e41a1c", "#377eb8", "#4daf4a"]);
   const xAxis = axisBottom(barXScale);
   const yAxis = axisLeft(barYScale);
+  const arcGenerator = arc();
+
+  const colorSchema = d3ScaleLinear().range([
+    "#98abc5",
+    "#8a89a6",
+    "#7b6888",
+    "#6b486b",
+    "#a05d56"
+  ]);
 
   return {
     barYScale,
     barXScale,
     colorScale,
     xAxis,
-    yAxis
+    yAxis,
+    arcGenerator,
+    colorSchema
   };
 }
 

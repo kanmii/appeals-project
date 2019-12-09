@@ -1,29 +1,16 @@
 <script>
   import { onMount } from "svelte";
-  import { arc } from "d3-shape";
-  import { scaleLinear as d3ScaleLinear } from "d3-scale";
   import { headerMapping } from "./appeals-injectables.js";
   import {
-    FEMALE_LABEL,
-    MALE_LABEL,
-    CHILDREN_LABEL,
-    ADULT_LABEL,
-    YOUTH_LABEL,
     getBarD3Helpers,
     computeBars,
     computeDistributions,
     computeGenderCategoryArcsAndData,
-    computeAgeDistributionArcsAndData
+    computeAgeDistributionArcsAndData,
+    initialGenderDistributionData,
+    initialAgeDistributionData
   } from "./appeals-utils";
 
-  const arcGenerator = arc();
-  const colorSchema = d3ScaleLinear().range([
-    "#98abc5",
-    "#8a89a6",
-    "#7b6888",
-    "#6b486b",
-    "#a05d56"
-  ]);
   const PIE_TRANSLATE = 250;
   const PIE_LABEL_OFFSET = 50;
   const barD3Helpers = getBarD3Helpers();
@@ -33,16 +20,8 @@
   let data = [];
   let ageDistributionArcs = [];
   let totalBeneficiaries = 0;
-
-  let genderDistributionData = [FEMALE_LABEL, MALE_LABEL].reduce(
-    (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
-    {}
-  );
-
-  let ageDistributionData = [YOUTH_LABEL, ADULT_LABEL, CHILDREN_LABEL].reduce(
-    (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
-    {}
-  );
+  let genderDistributionData = initialGenderDistributionData;
+  let ageDistributionData = initialAgeDistributionData;
 
   onMount(async () => {
     data = await fetchDataFn();
@@ -60,6 +39,7 @@
       childrenCount
     } = distributions;
 
+    const { arcGenerator, colorSchema } = barD3Helpers;
     colorSchema.domain([maleCount, femaleCount]);
 
     const genderDistributionComputed = computeGenderCategoryArcsAndData({
