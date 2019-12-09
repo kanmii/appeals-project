@@ -304,6 +304,15 @@
     <svg width={BAR_WIDTH} height={BAR_HEIGHT}>
       <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`}>
 
+        {#each improvedTechBars as bar}
+          <rect
+            x={bar.x}
+            y={bar.y}
+            height={bar.height}
+            width={bar.width}
+            fill={bar.fill} />
+        {/each}
+
         <g
           bind:this={improvedTechBarsXAxisContainerDom}
           class="x-axis-container"
