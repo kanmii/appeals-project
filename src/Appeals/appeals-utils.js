@@ -39,15 +39,16 @@ export const initialAgeDistributionData = [
 export function getBarD3Helpers() {
   const barYScale = d3ScaleLinear().range([BAR_HEIGHT, 0]);
 
-  const barXScale = d3ScaleBand()
+  const barXScaleBand = d3ScaleBand()
     .range([0, BAR_WIDTH])
-    .padding(0.2);
+    .padding(0.2)
+    .domain([IMPROVED_TECH_LABEL, NON_IMPROVED_TECH_LABEL]);
 
   const ordinalColorScale = d3ScaleOrdinal()
     .domain([FEMALE_LABEL, MALE_LABEL])
     .range(["#e41a1c", "#377eb8", "#4daf4a"]);
 
-  const xAxis = axisBottom(barXScale);
+  const xAxis = axisBottom(barXScaleBand);
   const yAxis = axisLeft(barYScale);
   const arcGenerator = d3Arc();
 
@@ -61,7 +62,7 @@ export function getBarD3Helpers() {
 
   return {
     barYScale,
-    barXScale,
+    barXScaleBand,
     ordinalColorScale,
     xAxis,
     yAxis,
@@ -80,14 +81,13 @@ export function computeBars(args) {
     improvedTechMaleCount,
     totalBeneficiaries,
     barYScale,
-    barXScale,
+    barXScaleBand,
     femaleCount,
     maleCount,
     ordinalColorScale
   } = args;
 
-  barXScale.domain([IMPROVED_TECH_LABEL, NON_IMPROVED_TECH_LABEL]);
-  barYScale.domain([0, computeSuperMax(totalBeneficiaries)]);
+  barYScale.domain([0, totalBeneficiaries]);
 
   const data = [
     {
@@ -103,35 +103,40 @@ export function computeBars(args) {
   ];
 
   const improvedTechBars = [];
-  const bandWidth = barXScale.bandwidth();
+  const width = barXScaleBand.bandwidth();
 
   d3Stack()
     .keys([FEMALE_LABEL, MALE_LABEL])(data)
     .forEach(d => {
       let i = 0;
       const len = d.length;
+      const key = d.key;
 
       for (; i < len; i++) {
         const nextBar = d[i];
-        const y0 = barYScale(nextBar[0]);
-        const y1 = barYScale(nextBar[1]);
-        const height = y0 - y1;
-        const x = barXScale(nextBar.data.improvementCategory);
+        const yBottom = barYScale(nextBar[0]);
+        const yTop = barYScale(nextBar[1]);
+        const height = yBottom - yTop;
+        const x = barXScaleBand(nextBar.data.improvementCategory);
 
         const bar = {
           x,
-          y: y1,
+          y: yTop,
           height,
-          width: bandWidth,
-          fill: ordinalColorScale(d.key)
+          width,
+          fill: ordinalColorScale(key)
         };
 
-        const text = {
-          x,
-          y: y1 - height / 2
+        const textProps = {
+          attrs: {
+            x: x + width / 2,
+            y: yTop + height / 2
+          },
+
+          text: key
         };
 
-        improvedTechBars.push({ bar, text });
+        improvedTechBars.push({ bar, textProps });
       }
     });
 
@@ -284,10 +289,4 @@ export function computeAgeDistributionArcsAndData({
     });
 
   return { ageDistributionData, ageDistributionArcs };
-}
-
-function computeSuperMax(totalBeneficiaries) {
-  const string = "" + totalBeneficiaries;
-  const lastCharNumber = +string.charAt(string.length - 1);
-  return totalBeneficiaries + (10 - lastCharNumber);
 }

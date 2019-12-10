@@ -308,8 +308,11 @@
     <svg width={BAR_SVG_WIDTH} height={BAR_SVG_HEIGHT}>
       <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`}>
 
-        {#each improvedTechBars as { bar }}
+      {#each improvedTechBars as { bar , textProps:{attrs, text}}}
           <rect {...bar} />
+          <text text-anchor="middle" fill="white" {...attrs}>
+          {text}
+          </text>
         {/each}
 
         <g
