@@ -23,18 +23,23 @@ export const GENDER_FEMALE_DATA = "Female";
 export const GENDER_MALE_DATA = "Male";
 
 export async function getCSVData() {
-  const rawBinaries = await fetch("/lagos-appeals.csv");
-  const textData = await rawBinaries.text();
-  return csvParse(textData, d => {
-    const data = Object.entries(d).reduce((acc, [k, v]) => {
-      acc[headerMapping[k]] = v;
-      return acc;
-    }, {});
+  try {
+    const rawBinaries = await fetch("/lagos-appeals.csv");
+    const textData = await rawBinaries.text();
+    return csvParse(textData, d => {
+      const data = Object.entries(d).reduce((acc, [k, v]) => {
+        const newKey = headerMapping[k];
+        const vLower = v.toLowerCase();
 
-    data.age = +data.age;
-    data.improvedTech = data.improvedTech === "Yes" ? true : false;
-    data.receivedAssets = data.receivedAssets === "Yes" ? true : false;
-    data.receivedTraining = data.receivedTraining === "Yes" ? true : false;
-    return data;
-  });
+        acc[newKey] = vLower === "yes" ? true : vLower === "no" ? false : v;
+
+        return acc;
+      }, {});
+
+      data.age = +data.age;
+      return data;
+    });
+  } catch (e) {
+    return [];
+  }
 }

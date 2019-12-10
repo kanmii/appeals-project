@@ -10,8 +10,9 @@
     initialGenderDistributionData,
     initialAgeDistributionData,
     BAR_HEIGHT,
-    BAR_WIDTH,
-    BAR_MARGINS
+    BAR_MARGINS,
+    BAR_SVG_WIDTH,
+    BAR_SVG_HEIGHT
   } from "./appeals-utils";
   import { select as d3Select } from "d3-selection";
 
@@ -33,6 +34,10 @@
   onMount(async () => {
     data = await fetchDataFn();
 
+    if (!data.length) {
+      return;
+    }
+
     const distributions = computeDistributions(data);
     totalBeneficiaries = distributions.totalBeneficiaries;
 
@@ -46,12 +51,11 @@
       childrenCount
     } = distributions;
 
-    const { arcGenerator, colorSchema } = barD3Helpers;
-    colorSchema.domain([maleCount, femaleCount]);
+    const { arcGenerator, linearColorScale } = barD3Helpers;
 
     const genderDistributionComputed = computeGenderCategoryArcsAndData({
       arcGenerator,
-      colorSchema,
+      linearColorScale,
       femaleCount,
       maleCount,
       totalBeneficiaries
@@ -64,7 +68,7 @@
       youthCount,
       adultCount,
       childrenCount,
-      colorSchema,
+      linearColorScale,
       arcGenerator,
       totalBeneficiaries
     });
@@ -301,22 +305,17 @@
   </h3>
 
   <div class="chart-container improved-tech-distribution">
-    <svg width={BAR_WIDTH} height={BAR_HEIGHT}>
+    <svg width={BAR_SVG_WIDTH} height={BAR_SVG_HEIGHT}>
       <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`}>
 
-        {#each improvedTechBars as bar}
-          <rect
-            x={bar.x}
-            y={bar.y}
-            height={bar.height}
-            width={bar.width}
-            fill={bar.fill} />
+        {#each improvedTechBars as { bar }}
+          <rect {...bar} />
         {/each}
 
         <g
           bind:this={improvedTechBarsXAxisContainerDom}
           class="x-axis-container"
-          transform={`translate(0,${BAR_HEIGHT - BAR_MARGINS.top - BAR_MARGINS.bottom})`} />
+          transform={`translate(0,${BAR_HEIGHT})`} />
 
         <g
           bind:this={improvedTechBarsYAxisContainerDom}

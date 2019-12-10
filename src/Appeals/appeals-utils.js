@@ -3,9 +3,8 @@ import {
   scaleBand as d3ScaleBand,
   scaleOrdinal as d3ScaleOrdinal
 } from "d3-scale";
-import { arc } from "d3-shape";
+import { arc as d3Arc, stack as d3Stack } from "d3-shape";
 import { axisBottom, axisLeft } from "d3-axis";
-import { stack as d3Stack } from "d3-shape";
 import { GENDER_FEMALE_DATA } from "./appeals-injectables.js";
 
 export const BAR_HEIGHT = 400;
@@ -16,6 +15,9 @@ export const BAR_MARGINS = {
   right: 30,
   bottom: 20
 };
+
+export const BAR_SVG_WIDTH = BAR_WIDTH + BAR_MARGINS.top + BAR_MARGINS.bottom;
+export const BAR_SVG_HEIGHT = BAR_HEIGHT + BAR_MARGINS.left + BAR_MARGINS.right;
 
 export const FEMALE_LABEL = "Female";
 export const MALE_LABEL = "Male";
@@ -41,15 +43,15 @@ export function getBarD3Helpers() {
     .range([0, BAR_WIDTH])
     .padding(0.2);
 
-  const colorScale = d3ScaleOrdinal()
+  const ordinalColorScale = d3ScaleOrdinal()
     .domain([FEMALE_LABEL, MALE_LABEL])
     .range(["#e41a1c", "#377eb8", "#4daf4a"]);
 
   const xAxis = axisBottom(barXScale);
   const yAxis = axisLeft(barYScale);
-  const arcGenerator = arc();
+  const arcGenerator = d3Arc();
 
-  const colorSchema = d3ScaleLinear().range([
+  const linearColorScale = d3ScaleLinear().range([
     "#98abc5",
     "#8a89a6",
     "#7b6888",
@@ -60,11 +62,11 @@ export function getBarD3Helpers() {
   return {
     barYScale,
     barXScale,
-    colorScale,
+    ordinalColorScale,
     xAxis,
     yAxis,
     arcGenerator,
-    colorSchema
+    linearColorScale
   };
 }
 
@@ -81,7 +83,7 @@ export function computeBars(args) {
     barXScale,
     femaleCount,
     maleCount,
-    colorScale
+    ordinalColorScale
   } = args;
 
   barXScale.domain([IMPROVED_TECH_LABEL, NON_IMPROVED_TECH_LABEL]);
@@ -100,32 +102,41 @@ export function computeBars(args) {
     }
   ];
 
-  const improvedTechBars = d3Stack()
+  const improvedTechBars = [];
+  const bandWidth = barXScale.bandwidth();
+
+  d3Stack()
     .keys([FEMALE_LABEL, MALE_LABEL])(data)
-    .map(d => {
+    .forEach(d => {
       let i = 0;
       const len = d.length;
-      const nextBars = [];
 
       for (; i < len; i++) {
         const nextBar = d[i];
         const y0 = barYScale(nextBar[0]);
         const y1 = barYScale(nextBar[1]);
+        const height = y0 - y1;
+        const x = barXScale(nextBar.data.improvementCategory);
 
-        nextBars.push({
-          x: barXScale(nextBar.data.improvementCategory),
+        const bar = {
+          x,
           y: y1,
-          height: y0 - y1,
-          width: barXScale.bandwidth(),
-          fill: colorScale(d.key)
-        });
-      }
+          height,
+          width: bandWidth,
+          fill: ordinalColorScale(d.key)
+        };
 
-      return nextBars;
+        const text = {
+          x,
+          y: y1 - height / 2
+        };
+
+        improvedTechBars.push({ bar, text });
+      }
     });
 
   return {
-    improvedTechBars: improvedTechBars.flat()
+    improvedTechBars
   };
 }
 
@@ -197,11 +208,13 @@ const totalAngle = Math.PI * 2;
 
 export function computeGenderCategoryArcsAndData({
   arcGenerator,
-  colorSchema,
+  linearColorScale,
   femaleCount,
   maleCount,
   totalBeneficiaries
 }) {
+  linearColorScale.domain([maleCount, femaleCount]);
+
   let startAngle = 0;
   const genderDistributionData = {};
 
@@ -224,7 +237,7 @@ export function computeGenderCategoryArcsAndData({
 
       return {
         d: arcGenerator(arcOption),
-        fill: colorSchema(count),
+        fill: linearColorScale(count),
         label: `${label} (${percent}%)`,
         centroid: arcGenerator.centroid(arcOption)
       };
@@ -237,7 +250,7 @@ export function computeAgeDistributionArcsAndData({
   youthCount,
   adultCount,
   childrenCount,
-  colorSchema,
+  linearColorScale,
   arcGenerator,
   totalBeneficiaries
 }) {
@@ -264,7 +277,7 @@ export function computeAgeDistributionArcsAndData({
 
       return {
         d: arcGenerator(arcOption),
-        fill: colorSchema(count),
+        fill: linearColorScale(count),
         label: `${label} (${percent}%)`,
         centroid: arcGenerator.centroid(arcOption)
       };
