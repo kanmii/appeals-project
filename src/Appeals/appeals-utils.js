@@ -131,7 +131,7 @@ export function getBarD3Helpers() {
   };
 }
 
-export function computeBars(dataDistributions, barHelpers) {
+export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
   const { barYScale, barXScaleBand, ordinalColorScale } = barHelpers;
 
   const {
