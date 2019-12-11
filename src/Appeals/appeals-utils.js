@@ -24,6 +24,8 @@ export const MALE_LABEL = "Male";
 export const YOUTH_LABEL = "Youth";
 export const ADULT_LABEL = "Adult";
 export const CHILDREN_LABEL = "Children";
+export const PIE_TRANSLATE = 250;
+export const PIE_LABEL_OFFSET = 50;
 
 // improved tech beneficiaries
 const IMPROVED_TECH_LABEL = "Improved Tech";
@@ -130,7 +132,7 @@ export function getBarD3Helpers() {
 }
 
 export function computeBars(dataDistributions, barHelpers) {
-  const { barYScale, barXScaleBand, ordinalColorScale } = barHelpers
+  const { barYScale, barXScaleBand, ordinalColorScale } = barHelpers;
 
   const {
     improvedTechFemaleCount,
@@ -200,13 +202,10 @@ export function computeBars(dataDistributions, barHelpers) {
 
 const totalAngle = Math.PI * 2;
 
-export function computeGenderCategoryArcsAndData({
-  arcGenerator,
-  linearColorScale,
-  femaleCount,
-  maleCount,
-  totalBeneficiaries
-}) {
+export function computeGenderCategoryArcsAndData(dataDistribution, helpers) {
+  const { femaleCount, maleCount, totalBeneficiaries } = dataDistribution;
+  const { arcGenerator, linearColorScale } = helpers;
+
   linearColorScale.domain([maleCount, femaleCount]);
 
   let startAngle = 0;
@@ -240,14 +239,17 @@ export function computeGenderCategoryArcsAndData({
   return { genderDistributionData, genderDistributionArcs };
 }
 
-export function computeAgeDistributionArcsAndData({
-  youthCount,
-  adultCount,
-  childrenCount,
-  linearColorScale,
-  arcGenerator,
-  totalBeneficiaries
-}) {
+export function computeAgeDistributionArcsAndData(dataDistribution, helpers) {
+  const {
+    youthCount,
+    adultCount,
+    childrenCount,
+    totalBeneficiaries
+  } = dataDistribution;
+
+  const { linearColorScale, arcGenerator } = helpers;
+  linearColorScale.domain([youthCount, adultCount]);
+
   let startAngle = 0;
   const ageDistributionData = {};
 

@@ -3,16 +3,14 @@
   import { headerMapping } from "./appeals-injectables.js";
   import {
     computeDistributions,
-    computeGenderCategoryArcsAndData,
     computeAgeDistributionArcsAndData,
-    initialGenderDistributionData,
-    initialAgeDistributionData
+    initialAgeDistributionData,
+    PIE_TRANSLATE,
+    PIE_LABEL_OFFSET
   } from "./appeals-utils";
   import { scaleLinear as d3ScaleLinear } from "d3-scale";
   import { arc as d3Arc } from "d3-shape";
 
-  const PIE_TRANSLATE = 250;
-  const PIE_LABEL_OFFSET = 50;
   const arcGenerator = d3Arc();
   const linearColorScale = d3ScaleLinear().range([
     "#98abc5",
@@ -22,15 +20,11 @@
     "#a05d56"
   ]);
 
-  let genderDistributionArcs = [];
   let data = [];
   let ageDistributionArcs = [];
-  let genderDistributionData = initialGenderDistributionData;
   let ageDistributionData = initialAgeDistributionData;
 
   let totalBeneficiaries = 0;
-  let maleCount = 0;
-  let femaleCount = 0;
 
   export let fetchDataFn;
   export let distributions = {
@@ -54,31 +48,16 @@
 
     distributions = computeDistributions(data);
 
-    const { youthCount, adultCount, childrenCount } = distributions;
-
     totalBeneficiaries = distributions.totalBeneficiaries;
-    femaleCount = distributions.femaleCount;
-    maleCount = distributions.maleCount;
 
-    const genderDistributionComputed = computeGenderCategoryArcsAndData({
-      arcGenerator,
-      linearColorScale,
-      femaleCount,
-      maleCount,
-      totalBeneficiaries
-    });
+    const ageDistributionComputed = computeAgeDistributionArcsAndData(
+      distributions,
+      {
+        linearColorScale,
+        arcGenerator
+      }
+    );
 
-    genderDistributionData = genderDistributionComputed.genderDistributionData;
-    genderDistributionArcs = genderDistributionComputed.genderDistributionArcs;
-
-    const ageDistributionComputed = computeAgeDistributionArcsAndData({
-      youthCount,
-      adultCount,
-      childrenCount,
-      linearColorScale,
-      arcGenerator,
-      totalBeneficiaries
-    });
     ageDistributionData = ageDistributionComputed.ageDistributionData;
     ageDistributionArcs = ageDistributionComputed.ageDistributionArcs;
   });
@@ -162,72 +141,6 @@
 
   <h3 class="title">Raw Data</h3>
 
-  <div class="chart-container gender-distribution">
-    <svg width="500" height="500">
-      <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
-        {#each genderDistributionArcs as arc}
-          <path d={arc.d} fill={arc.fill} stroke="white" />
-
-          <!-- label -->
-          <text
-            class="outline"
-            x={arc.centroid[0] - PIE_LABEL_OFFSET}
-            y={arc.centroid[1]}>
-            {arc.label}
-          </text>
-
-          <text x={arc.centroid[0] - PIE_LABEL_OFFSET} y={arc.centroid[1]}>
-            {arc.label}
-          </text>
-          <!-- label -->
-        {/each}
-      </g>
-    </svg>
-
-    <div class="data-summary-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Gender</th>
-            <th class="num-candidates">Number of candidates</th>
-            <th>% Distribution</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {#each Object.entries(genderDistributionData) as [k, { count, percent }]}
-            {#if count > 0}
-              <tr>
-                <td>{k}</td>
-                <td>{count}</td>
-                <td>{percent}</td>
-              </tr>
-            {/if}
-          {/each}
-
-          {#if totalBeneficiaries > 0}
-            <td>
-              <strong>Total</strong>
-            </td>
-
-            <td>
-              <strong>{totalBeneficiaries}</strong>
-            </td>
-
-            <td>
-              <strong>100%</strong>
-            </td>
-          {/if}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <h3 class="title">
-    Distribution of beneficiaries by
-    <strong>gender</strong>
-  </h3>
-
   <div class="chart-container age-distribution">
     <svg width="500" height="500">
       <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
@@ -295,4 +208,8 @@
   </h3>
 
   <slot name="improvedTech" dataDistributions={distributions} />
+  <slot
+    name="genderDistribution"
+    dataDistributions={distributions}
+    d3Helpers={{ linearColorScale }} />
 </div>
