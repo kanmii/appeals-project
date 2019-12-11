@@ -1,7 +1,7 @@
 <script>
   import Appeals from "./Appeals/appeals.svelte";
   import { getCSVData } from "./Appeals/appeals-injectables.js";
-  import ImprovedTech from "./Appeals/improved-tech.svelte";
+  import ImprovedTechDistribution from "./Appeals/improved-tech-distribution.svelte";
   import GenderDistribution from "./Appeals/gender-distribution.svelte";
   import AgeDistribution from "./Appeals/age-distribution.svelte";
 </script>
@@ -16,8 +16,8 @@
       <AgeDistribution {dataDistributions} {d3Helpers} />
     </div>
 
-    <div slot="improvedTech">
-      <ImprovedTech {dataDistributions} />
+    <div slot="improvedTechDistribution">
+      <ImprovedTechDistribution {dataDistributions} />
     </div>
 
   </Appeals>

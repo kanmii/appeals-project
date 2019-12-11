@@ -119,5 +119,5 @@
 
   <slot name="ageDistribution" {dataDistributions} {d3Helpers} />
 
-  <slot name="improvedTech" {dataDistributions} />
+  <slot name="improvedTechDistribution" {dataDistributions} />
 </div>
