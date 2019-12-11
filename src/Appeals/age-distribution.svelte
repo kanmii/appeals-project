@@ -2,8 +2,7 @@
   import {
     computeAgeDistributionArcsAndData,
     initialAgeDistributionData,
-    PIE_TRANSLATE,
-    PIE_LABEL_OFFSET
+    PIE_TRANSLATE
   } from "./appeals-utils";
 
   export let dataDistributions = {};
@@ -36,13 +35,16 @@
 
         <!-- label -->
         <text
+          text-anchor="middle"
           class="outline"
-          x={centroid[0] - PIE_LABEL_OFFSET}
+          x={centroid[0]}
           y={centroid[1]}>
           {label}
         </text>
 
-        <text x={centroid[0] - PIE_LABEL_OFFSET} y={centroid[1]}>{label}</text>
+        <text text-anchor="middle" x={centroid[0]} y={centroid[1]}>
+          {label}
+        </text>
         <!-- label -->
       {/each}
     </g>

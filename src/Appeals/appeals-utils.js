@@ -228,11 +228,18 @@ export function computeGenderCategoryArcsAndData(dataDistribution, helpers) {
         endAngle: (startAngle += fraction * totalAngle)
       };
 
+      const [labelX, labelY] = arcGenerator.centroid(arcOption);
+
       return {
         d: arcGenerator(arcOption),
         fill: linearColorScale(count),
         label: `${label} (${percent}%)`,
-        centroid: arcGenerator.centroid(arcOption)
+        centroid: [labelX, labelY],
+        labelProps: {
+          x: labelX,
+          y: labelY,
+          label: `${label} (${percent}%)`
+        }
       };
     });
 

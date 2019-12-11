@@ -2,8 +2,7 @@
   import {
     computeGenderCategoryArcsAndData,
     initialGenderDistributionData,
-    PIE_TRANSLATE,
-    PIE_LABEL_OFFSET
+    PIE_TRANSLATE
   } from "./appeals-utils";
   import { arc as d3Arc } from "d3-shape";
 
@@ -34,12 +33,13 @@
         <!-- label -->
         <text
           class="outline"
-          x={arc.centroid[0] - PIE_LABEL_OFFSET}
+          text-anchor="middle"
+          x={arc.centroid[0]}
           y={arc.centroid[1]}>
           {arc.label}
         </text>
 
-        <text x={arc.centroid[0] - PIE_LABEL_OFFSET} y={arc.centroid[1]}>
+        <text x={arc.centroid[0]} y={arc.centroid[1]} text-anchor="middle">
           {arc.label}
         </text>
         <!-- label -->
