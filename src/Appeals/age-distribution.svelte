@@ -29,23 +29,21 @@
 
 <div class="chart-container age-distribution">
   <svg width="500" height="500">
-    <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
-      {#each ageDistributionArcs as { d, fill, centroid, label } (fill)}
-        <path {d} {fill} stroke="white" />
+    <g transform="translate({PIE_TRANSLATE},{PIE_TRANSLATE})">
+    {#each ageDistributionArcs as { arcProps, labelProps:{x, y, labelText} }}
+        <path {...arcProps} stroke="white" />
 
-        <!-- label -->
         <text
-          text-anchor="middle"
           class="outline"
-          x={centroid[0]}
-          y={centroid[1]}>
-          {label}
+          text-anchor="middle"
+          x={x}
+          y={y}>
+          {labelText}
         </text>
 
-        <text text-anchor="middle" x={centroid[0]} y={centroid[1]}>
-          {label}
+        <text x={x} y={y} text-anchor="middle">
+          {labelText}
         </text>
-        <!-- label -->
       {/each}
     </g>
   </svg>

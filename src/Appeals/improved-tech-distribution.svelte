@@ -29,7 +29,7 @@
 
 <div class="chart-container improved-tech-distribution">
   <svg width={BAR_SVG_WIDTH} height={BAR_SVG_HEIGHT}>
-    <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`}>
+    <g transform="translate({BAR_MARGINS.left},{BAR_MARGINS.top})">
 
       {#each improvedTechBars as { bar, textProps: { attrs, text }, key } (key)}
         <rect {...bar} />
@@ -39,7 +39,7 @@
       <g
         bind:this={improvedTechBarsXAxisContainerDom}
         class="x-axis-container"
-        transform={`translate(0,${BAR_HEIGHT})`} />
+        transform="translate(0,{BAR_HEIGHT})" />
 
       <g
         bind:this={improvedTechBarsYAxisContainerDom}

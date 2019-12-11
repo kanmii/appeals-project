@@ -6,7 +6,6 @@
   } from "./appeals-utils";
   import { arc as d3Arc } from "d3-shape";
 
-  const arcGenerator = d3Arc();
 
   export let dataDistributions = {};
   export let genderDistributionArcs = [];
@@ -14,10 +13,7 @@
   export let d3Helpers;
 
   $: if (dataDistributions.dataReady) {
-    const arcsAndData = computeGenderCategoryArcsAndData(dataDistributions, {
-      arcGenerator,
-      ...d3Helpers
-    });
+    const arcsAndData = computeGenderCategoryArcsAndData(dataDistributions, d3Helpers);
 
     genderDistributionArcs = arcsAndData.genderDistributionArcs;
     genderDistributionData = arcsAndData.genderDistributionData;
@@ -26,23 +22,21 @@
 
 <div class="chart-container gender-distribution">
   <svg width="500" height="500">
-    <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
-      {#each genderDistributionArcs as arc}
-        <path d={arc.d} fill={arc.fill} stroke="white" />
+    <g transform="translate({PIE_TRANSLATE},{PIE_TRANSLATE})">
+    {#each genderDistributionArcs as { arcProps, labelProps:{x, y, labelText} }}
+        <path {...arcProps} stroke="white" />
 
-        <!-- label -->
         <text
           class="outline"
           text-anchor="middle"
-          x={arc.centroid[0]}
-          y={arc.centroid[1]}>
-          {arc.label}
+          x={x}
+          y={y}>
+          {labelText}
         </text>
 
-        <text x={arc.centroid[0]} y={arc.centroid[1]} text-anchor="middle">
-          {arc.label}
+        <text x={x} y={y} text-anchor="middle">
+          {labelText}
         </text>
-        <!-- label -->
       {/each}
     </g>
   </svg>

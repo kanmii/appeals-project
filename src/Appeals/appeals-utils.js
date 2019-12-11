@@ -1,10 +1,11 @@
+import { axisBottom, axisLeft } from "d3-axis";
 import {
-  scaleLinear as d3ScaleLinear,
   scaleBand as d3ScaleBand,
+  scaleLinear as d3ScaleLinear,
   scaleOrdinal as d3ScaleOrdinal
 } from "d3-scale";
 import { stack as d3Stack } from "d3-shape";
-import { axisBottom, axisLeft } from "d3-axis";
+
 import { GENDER_FEMALE_DATA } from "./appeals-injectables.js";
 
 export const BAR_HEIGHT = 400;
@@ -24,6 +25,10 @@ export const MALE_LABEL = "Male";
 export const YOUTH_LABEL = "Youth";
 export const ADULT_LABEL = "Adult";
 export const CHILDREN_LABEL = "Children";
+const RECEIVED_ASSETS_LABEL = "Received Assets";
+const NO_RECEIVED_ASSETS_LABEL = "No Received Assets";
+const RECEIVED_TRAINING_LABEL = "Received Training";
+const NO_RECEIVED_TRAINING_LABEL = "No Received Training";
 export const PIE_TRANSLATE = 250;
 export const PIE_LABEL_OFFSET = 50;
 
@@ -45,20 +50,29 @@ export const initialAgeDistributionData = [
 export function computeDistributions(data) {
   let improvedTechFemaleCount = 0;
   let improvedTechMaleCount = 0;
+  let totalBeneficiaries = 0;
+  let totalImprovedTech = 0;
 
   // gender distribution
   let femaleCount = 0;
-  let maleCount = 0;
 
   /* age distribution */
   let youthCount = 0;
   let adultCount = 0;
   let childrenCount = 0;
 
-  //ageDistributionMap
+  const allDistributions = {};
+
+  // ageDistributionMap
   data.reduce(
     (acc, d) => {
-      const { age, gender, improvedTech } = d;
+      const { age, gender, improvedTech, receivedAssets, receivedTraining } = d;
+
+      ++totalBeneficiaries;
+
+      if (improvedTech) {
+        ++totalImprovedTech;
+      }
 
       if (age < 18) {
         ++childrenCount;
@@ -78,8 +92,6 @@ export function computeDistributions(data) {
           ++improvedTechFemaleCount;
         }
       } else {
-        ++maleCount;
-
         if (improvedTech) {
           ++improvedTechMaleCount;
         }
@@ -87,12 +99,18 @@ export function computeDistributions(data) {
 
       return acc;
     },
-    {
-      [YOUTH_LABEL]: [],
-      [ADULT_LABEL]: [],
-      [CHILDREN_LABEL]: []
-    }
+    { [YOUTH_LABEL]: [], [ADULT_LABEL]: [], [CHILDREN_LABEL]: [] }
   );
+
+  const maleCount = totalBeneficiaries - femaleCount;
+
+  allDistributions[FEMALE_LABEL] = femaleCount;
+  allDistributions[MALE_LABEL] = maleCount;
+  allDistributions[IMPROVED_TECH_LABEL] = totalImprovedTech;
+  allDistributions[NON_IMPROVED_TECH_LABEL] =
+    totalBeneficiaries - totalImprovedTech;
+  allDistributions[YOUTH_LABEL] = youthCount;
+  allDistributions[ADULT_LABEL] = adultCount;
 
   return {
     maleCount,
@@ -102,8 +120,9 @@ export function computeDistributions(data) {
     youthCount,
     adultCount,
     childrenCount,
-    totalBeneficiaries: maleCount + femaleCount,
-    dataReady: true
+    totalBeneficiaries,
+    dataReady: true,
+    allDistributions
   };
 }
 
@@ -122,13 +141,7 @@ export function getBarD3Helpers() {
   const xAxis = axisBottom(barXScaleBand);
   const yAxis = axisLeft(barYScale);
 
-  return {
-    barYScale,
-    barXScaleBand,
-    ordinalColorScale,
-    xAxis,
-    yAxis
-  };
+  return { barYScale, barXScaleBand, ordinalColorScale, xAxis, yAxis };
 }
 
 export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
@@ -174,19 +187,10 @@ export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
         const height = yBottom - yTop;
         const x = barXScaleBand(nextBar.data.improvementCategory);
 
-        const bar = {
-          x,
-          y: yTop,
-          height,
-          width,
-          fill: ordinalColorScale(key)
-        };
+        const bar = { x, y: yTop, height, width, fill: ordinalColorScale(key) };
 
         const textProps = {
-          attrs: {
-            x: x + width / 2,
-            y: yTop + height / 2
-          },
+          attrs: { x: x + width / 2, y: yTop + height / 2 },
 
           text: key
         };
@@ -195,9 +199,7 @@ export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
       }
     });
 
-  return {
-    improvedTechBars
-  };
+  return { improvedTechBars };
 }
 
 const totalAngle = Math.PI * 2;
@@ -231,14 +233,11 @@ export function computeGenderCategoryArcsAndData(dataDistribution, helpers) {
       const [labelX, labelY] = arcGenerator.centroid(arcOption);
 
       return {
-        d: arcGenerator(arcOption),
-        fill: linearColorScale(count),
-        label: `${label} (${percent}%)`,
-        centroid: [labelX, labelY],
+        arcProps: { d: arcGenerator(arcOption), fill: linearColorScale(count) },
         labelProps: {
           x: labelX,
           y: labelY,
-          label: `${label} (${percent}%)`
+          labelText: `${label} (${percent}%)`
         }
       };
     });
@@ -278,11 +277,15 @@ export function computeAgeDistributionArcsAndData(dataDistribution, helpers) {
         endAngle: (startAngle += fraction * totalAngle)
       };
 
+      const [labelX, labelY] = arcGenerator.centroid(arcOption);
+
       return {
-        d: arcGenerator(arcOption),
-        fill: linearColorScale(count),
-        label: `${label} (${percent}%)`,
-        centroid: arcGenerator.centroid(arcOption)
+        arcProps: { d: arcGenerator(arcOption), fill: linearColorScale(count) },
+        labelProps: {
+          x: labelX,
+          y: labelY,
+          labelText: `${label} (${percent}%)`
+        }
       };
     });
 
