@@ -64,34 +64,33 @@
 </script>
 
 <style>
-  .title {
+  .appeals :global(.title) {
     text-align: center;
   }
 
-  .chart-container {
+  .appeals :global(.chart-container) {
     display: flex;
   }
 
   @media (max-width: 899px) {
-    .chart-container {
+    .appeals :global(.chart-container) {
       flex-direction: column;
       align-items: center;
       justify-content: center;
     }
   }
 
-  .data-summary-table {
+  .appeals :global(.data-summary-table) {
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  table {
+  .appeals :global(table) {
     border-collapse: collapse;
   }
 
-  td,
-  th {
+  .appeals :global(td, th) {
     border: 1px solid #999;
     padding: 0.5rem;
   }
@@ -207,9 +206,10 @@
     <strong>age</strong>
   </h3>
 
-  <slot name="improvedTech" dataDistributions={distributions} />
   <slot
     name="genderDistribution"
     dataDistributions={distributions}
     d3Helpers={{ linearColorScale }} />
+
+  <slot name="improvedTech" dataDistributions={distributions} />
 </div>
