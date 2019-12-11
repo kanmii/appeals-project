@@ -136,7 +136,7 @@ export function computeBars(args) {
           text: key
         };
 
-        improvedTechBars.push({ bar, textProps });
+        improvedTechBars.push({ bar, textProps, key: x + key });
       }
     });
 

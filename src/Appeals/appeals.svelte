@@ -241,19 +241,19 @@
   <div class="chart-container age-distribution">
     <svg width="500" height="500">
       <g transform={`translate(${PIE_TRANSLATE},${PIE_TRANSLATE})`}>
-        {#each ageDistributionArcs as arc}
-          <path d={arc.d} fill={arc.fill} stroke="white" />
+        {#each ageDistributionArcs as { d, fill, centroid, label } (fill)}
+          <path {d} {fill} stroke="white" />
 
           <!-- label -->
           <text
             class="outline"
-            x={arc.centroid[0] - PIE_LABEL_OFFSET}
-            y={arc.centroid[1]}>
-            {arc.label}
+            x={centroid[0] - PIE_LABEL_OFFSET}
+            y={centroid[1]}>
+            {label}
           </text>
 
-          <text x={arc.centroid[0] - PIE_LABEL_OFFSET} y={arc.centroid[1]}>
-            {arc.label}
+          <text x={centroid[0] - PIE_LABEL_OFFSET} y={centroid[1]}>
+            {label}
           </text>
           <!-- label -->
         {/each}
@@ -271,7 +271,7 @@
         </thead>
 
         <tbody>
-          {#each Object.entries(ageDistributionData) as [k, { count, percent }]}
+          {#each Object.entries(ageDistributionData) as [k, { count, percent }] (k)}
             {#if count > 0}
               <tr>
                 <td>{k}</td>
@@ -308,11 +308,9 @@
     <svg width={BAR_SVG_WIDTH} height={BAR_SVG_HEIGHT}>
       <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`}>
 
-      {#each improvedTechBars as { bar , textProps:{attrs, text}}}
+        {#each improvedTechBars as { bar, textProps: { attrs, text }, key } (key)}
           <rect {...bar} />
-          <text text-anchor="middle" fill="white" {...attrs}>
-          {text}
-          </text>
+          <text text-anchor="middle" fill="white" {...attrs}>{text}</text>
         {/each}
 
         <g
