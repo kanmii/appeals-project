@@ -3,33 +3,31 @@
   import { headerMapping } from "./appeals-injectables.js";
   import {
     getBarD3Helpers,
-    computeBars,
     computeDistributions,
     computeGenderCategoryArcsAndData,
     computeAgeDistributionArcsAndData,
     initialGenderDistributionData,
-    initialAgeDistributionData,
-    BAR_HEIGHT,
-    BAR_MARGINS,
-    BAR_SVG_WIDTH,
-    BAR_SVG_HEIGHT
+    initialAgeDistributionData
   } from "./appeals-utils";
-  import { select as d3Select } from "d3-selection";
 
   const PIE_TRANSLATE = 250;
   const PIE_LABEL_OFFSET = 50;
   const barD3Helpers = getBarD3Helpers();
 
-  export let fetchDataFn;
   let genderDistributionArcs = [];
   let data = [];
   let ageDistributionArcs = [];
-  let totalBeneficiaries = 0;
   let genderDistributionData = initialGenderDistributionData;
   let ageDistributionData = initialAgeDistributionData;
-  let improvedTechBars = [];
-  let improvedTechBarsXAxisContainerDom;
-  let improvedTechBarsYAxisContainerDom;
+
+  let totalBeneficiaries = 0;
+  let improvedTechFemaleCount = 0;
+  let improvedTechMaleCount = 0;
+  let maleCount = 0;
+  let femaleCount = 0;
+  let dataReady = false;
+
+  export let fetchDataFn;
 
   onMount(async () => {
     data = await fetchDataFn();
@@ -38,18 +36,16 @@
       return;
     }
 
+    dataReady = true;
     const distributions = computeDistributions(data);
-    totalBeneficiaries = distributions.totalBeneficiaries;
 
-    const {
-      femaleCount,
-      maleCount,
-      improvedTechFemaleCount,
-      improvedTechMaleCount,
-      youthCount,
-      adultCount,
-      childrenCount
-    } = distributions;
+    const { youthCount, adultCount, childrenCount } = distributions;
+
+    totalBeneficiaries = distributions.totalBeneficiaries;
+    improvedTechFemaleCount = distributions.improvedTechFemaleCount;
+    improvedTechMaleCount = distributions.improvedTechFemaleCount;
+    femaleCount = distributions.femaleCount;
+    maleCount = distributions.maleCount;
 
     const { arcGenerator, linearColorScale } = barD3Helpers;
 
@@ -74,24 +70,7 @@
     });
     ageDistributionData = ageDistributionComputed.ageDistributionData;
     ageDistributionArcs = ageDistributionComputed.ageDistributionArcs;
-
-    const bars = computeBars({
-      improvedTechFemaleCount,
-      improvedTechMaleCount,
-      totalBeneficiaries,
-      femaleCount,
-      maleCount,
-      ...barD3Helpers
-    });
-
-    improvedTechBars = bars.improvedTechBars;
   });
-
-  $: if (improvedTechBars.length) {
-    const { xAxis, yAxis } = barD3Helpers;
-    d3Select(improvedTechBarsXAxisContainerDom).call(xAxis);
-    d3Select(improvedTechBarsYAxisContainerDom).call(yAxis);
-  }
 </script>
 
 <style>
@@ -304,30 +283,13 @@
     <strong>age</strong>
   </h3>
 
-  <div class="chart-container improved-tech-distribution">
-    <svg width={BAR_SVG_WIDTH} height={BAR_SVG_HEIGHT}>
-      <g transform={`translate(${BAR_MARGINS.left},${BAR_MARGINS.top})`}>
-
-        {#each improvedTechBars as { bar, textProps: { attrs, text }, key } (key)}
-          <rect {...bar} />
-          <text text-anchor="middle" fill="white" {...attrs}>{text}</text>
-        {/each}
-
-        <g
-          bind:this={improvedTechBarsXAxisContainerDom}
-          class="x-axis-container"
-          transform={`translate(0,${BAR_HEIGHT})`} />
-
-        <g
-          bind:this={improvedTechBarsYAxisContainerDom}
-          class="y-axis-container" />
-
-      </g>
-    </svg>
-  </div>
-
-  <h3 class="title">
-    Distribution of beneficiaries by
-    <strong>improved technology</strong>
-  </h3>
+  <slot
+    name="improvedTech"
+    {dataReady}
+    {maleCount}
+    {femaleCount}
+    {improvedTechFemaleCount}
+    {improvedTechMaleCount}
+    {totalBeneficiaries}
+    {barD3Helpers} />
 </div>
