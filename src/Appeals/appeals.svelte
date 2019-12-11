@@ -2,17 +2,25 @@
   import { onMount } from "svelte";
   import { headerMapping } from "./appeals-injectables.js";
   import {
-    getBarD3Helpers,
     computeDistributions,
     computeGenderCategoryArcsAndData,
     computeAgeDistributionArcsAndData,
     initialGenderDistributionData,
     initialAgeDistributionData
   } from "./appeals-utils";
+  import { scaleLinear as d3ScaleLinear } from "d3-scale";
+  import { arc as d3Arc } from "d3-shape";
 
   const PIE_TRANSLATE = 250;
   const PIE_LABEL_OFFSET = 50;
-  const barD3Helpers = getBarD3Helpers();
+  const arcGenerator = d3Arc();
+  const linearColorScale = d3ScaleLinear().range([
+    "#98abc5",
+    "#8a89a6",
+    "#7b6888",
+    "#6b486b",
+    "#a05d56"
+  ]);
 
   let genderDistributionArcs = [];
   let data = [];
@@ -21,13 +29,21 @@
   let ageDistributionData = initialAgeDistributionData;
 
   let totalBeneficiaries = 0;
-  let improvedTechFemaleCount = 0;
-  let improvedTechMaleCount = 0;
   let maleCount = 0;
   let femaleCount = 0;
-  let dataReady = false;
 
   export let fetchDataFn;
+  export let distributions = {
+    maleCount: 0,
+    femaleCount: 0,
+    improvedTechMaleCount: 0,
+    improvedTechFemaleCount: 0,
+    youthCount: 0,
+    adultCount: 0,
+    childrenCount: 0,
+    totalBeneficiaries: 0,
+    dataReady: false
+  };
 
   onMount(async () => {
     data = await fetchDataFn();
@@ -36,18 +52,13 @@
       return;
     }
 
-    dataReady = true;
-    const distributions = computeDistributions(data);
+    distributions = computeDistributions(data);
 
     const { youthCount, adultCount, childrenCount } = distributions;
 
     totalBeneficiaries = distributions.totalBeneficiaries;
-    improvedTechFemaleCount = distributions.improvedTechFemaleCount;
-    improvedTechMaleCount = distributions.improvedTechFemaleCount;
     femaleCount = distributions.femaleCount;
     maleCount = distributions.maleCount;
-
-    const { arcGenerator, linearColorScale } = barD3Helpers;
 
     const genderDistributionComputed = computeGenderCategoryArcsAndData({
       arcGenerator,
@@ -283,13 +294,5 @@
     <strong>age</strong>
   </h3>
 
-  <slot
-    name="improvedTech"
-    {dataReady}
-    {maleCount}
-    {femaleCount}
-    {improvedTechFemaleCount}
-    {improvedTechMaleCount}
-    {totalBeneficiaries}
-    {barD3Helpers} />
+  <slot name="improvedTech" dataDistributions={distributions} />
 </div>

@@ -5,24 +5,9 @@
 </script>
 
 <main>
-  <Appeals
-    let:dataReady
-    let:improvedTechFemaleCount
-    let:improvedTechMaleCount
-    let:maleCount
-    let:femaleCount
-    let:totalBeneficiaries
-    let:barD3Helpers
-    fetchDataFn={getCSVData}>
+  <Appeals let:dataDistributions fetchDataFn={getCSVData}>
     <div slot="improvedTech">
-      <ImprovedTech
-        {dataReady}
-        {maleCount}
-        {femaleCount}
-        {improvedTechFemaleCount}
-        {improvedTechMaleCount}
-        {totalBeneficiaries}
-        {barD3Helpers} />
+      <ImprovedTech {dataDistributions} />
     </div>
   </Appeals>
 </main>

@@ -3,7 +3,7 @@ import {
   scaleBand as d3ScaleBand,
   scaleOrdinal as d3ScaleOrdinal
 } from "d3-scale";
-import { arc as d3Arc, stack as d3Stack } from "d3-shape";
+import { stack as d3Stack } from "d3-shape";
 import { axisBottom, axisLeft } from "d3-axis";
 import { GENDER_FEMALE_DATA } from "./appeals-injectables.js";
 
@@ -25,6 +25,10 @@ export const YOUTH_LABEL = "Youth";
 export const ADULT_LABEL = "Adult";
 export const CHILDREN_LABEL = "Children";
 
+// improved tech beneficiaries
+const IMPROVED_TECH_LABEL = "Improved Tech";
+const NON_IMPROVED_TECH_LABEL = "Non Improved Tech";
+
 export const initialGenderDistributionData = [FEMALE_LABEL, MALE_LABEL].reduce(
   (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
   {}
@@ -35,115 +39,6 @@ export const initialAgeDistributionData = [
   ADULT_LABEL,
   CHILDREN_LABEL
 ].reduce((acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }), {});
-
-export function getBarD3Helpers() {
-  const barYScale = d3ScaleLinear().range([BAR_HEIGHT, 0]);
-
-  const barXScaleBand = d3ScaleBand()
-    .range([0, BAR_WIDTH])
-    .padding(0.2)
-    .domain([IMPROVED_TECH_LABEL, NON_IMPROVED_TECH_LABEL]);
-
-  const ordinalColorScale = d3ScaleOrdinal()
-    .domain([FEMALE_LABEL, MALE_LABEL])
-    .range(["#e41a1c", "#377eb8", "#4daf4a"]);
-
-  const xAxis = axisBottom(barXScaleBand);
-  const yAxis = axisLeft(barYScale);
-  const arcGenerator = d3Arc();
-
-  const linearColorScale = d3ScaleLinear().range([
-    "#98abc5",
-    "#8a89a6",
-    "#7b6888",
-    "#6b486b",
-    "#a05d56"
-  ]);
-
-  return {
-    barYScale,
-    barXScaleBand,
-    ordinalColorScale,
-    xAxis,
-    yAxis,
-    arcGenerator,
-    linearColorScale
-  };
-}
-
-// improved tech beneficiaries
-const IMPROVED_TECH_LABEL = "Improved Tech";
-const NON_IMPROVED_TECH_LABEL = "Non Improved Tech";
-
-export function computeBars(args) {
-  const {
-    improvedTechFemaleCount,
-    improvedTechMaleCount,
-    totalBeneficiaries,
-    barYScale,
-    barXScaleBand,
-    femaleCount,
-    maleCount,
-    ordinalColorScale
-  } = args;
-
-  barYScale.domain([0, totalBeneficiaries]);
-
-  const data = [
-    {
-      improvementCategory: IMPROVED_TECH_LABEL,
-      [MALE_LABEL]: improvedTechMaleCount,
-      [FEMALE_LABEL]: improvedTechFemaleCount
-    },
-    {
-      improvementCategory: NON_IMPROVED_TECH_LABEL,
-      [MALE_LABEL]: maleCount - improvedTechMaleCount,
-      [FEMALE_LABEL]: femaleCount - improvedTechFemaleCount
-    }
-  ];
-
-  const improvedTechBars = [];
-  const width = barXScaleBand.bandwidth();
-
-  d3Stack()
-    .keys([FEMALE_LABEL, MALE_LABEL])(data)
-    .forEach(d => {
-      let i = 0;
-      const len = d.length;
-      const key = d.key;
-
-      for (; i < len; i++) {
-        const nextBar = d[i];
-        const yBottom = barYScale(nextBar[0]);
-        const yTop = barYScale(nextBar[1]);
-        const height = yBottom - yTop;
-        const x = barXScaleBand(nextBar.data.improvementCategory);
-
-        const bar = {
-          x,
-          y: yTop,
-          height,
-          width,
-          fill: ordinalColorScale(key)
-        };
-
-        const textProps = {
-          attrs: {
-            x: x + width / 2,
-            y: yTop + height / 2
-          },
-
-          text: key
-        };
-
-        improvedTechBars.push({ bar, textProps, key: x + key });
-      }
-    });
-
-  return {
-    improvedTechBars
-  };
-}
 
 export function computeDistributions(data) {
   let improvedTechFemaleCount = 0;
@@ -205,7 +100,101 @@ export function computeDistributions(data) {
     youthCount,
     adultCount,
     childrenCount,
-    totalBeneficiaries: maleCount + femaleCount
+    totalBeneficiaries: maleCount + femaleCount,
+    dataReady: true
+  };
+}
+
+export function getBarD3Helpers() {
+  const barYScale = d3ScaleLinear().range([BAR_HEIGHT, 0]);
+
+  const barXScaleBand = d3ScaleBand()
+    .range([0, BAR_WIDTH])
+    .padding(0.2)
+    .domain([IMPROVED_TECH_LABEL, NON_IMPROVED_TECH_LABEL]);
+
+  const ordinalColorScale = d3ScaleOrdinal()
+    .domain([FEMALE_LABEL, MALE_LABEL])
+    .range(["#e41a1c", "#377eb8", "#4daf4a"]);
+
+  const xAxis = axisBottom(barXScaleBand);
+  const yAxis = axisLeft(barYScale);
+
+  return {
+    barYScale,
+    barXScaleBand,
+    ordinalColorScale,
+    xAxis,
+    yAxis
+  };
+}
+
+export function computeBars(dataDistributions, barHelpers) {
+  const { barYScale, barXScaleBand, ordinalColorScale } = barHelpers
+
+  const {
+    improvedTechFemaleCount,
+    improvedTechMaleCount,
+    totalBeneficiaries,
+    femaleCount,
+    maleCount
+  } = dataDistributions;
+
+  barYScale.domain([0, totalBeneficiaries]);
+
+  const data = [
+    {
+      improvementCategory: IMPROVED_TECH_LABEL,
+      [MALE_LABEL]: improvedTechMaleCount,
+      [FEMALE_LABEL]: improvedTechFemaleCount
+    },
+    {
+      improvementCategory: NON_IMPROVED_TECH_LABEL,
+      [MALE_LABEL]: maleCount - improvedTechMaleCount,
+      [FEMALE_LABEL]: femaleCount - improvedTechFemaleCount
+    }
+  ];
+
+  const improvedTechBars = [];
+  const width = barXScaleBand.bandwidth();
+
+  d3Stack()
+    .keys([FEMALE_LABEL, MALE_LABEL])(data)
+    .forEach(d => {
+      let i = 0;
+      const len = d.length;
+      const key = d.key;
+
+      for (; i < len; i++) {
+        const nextBar = d[i];
+        const yBottom = barYScale(nextBar[0]);
+        const yTop = barYScale(nextBar[1]);
+        const height = yBottom - yTop;
+        const x = barXScaleBand(nextBar.data.improvementCategory);
+
+        const bar = {
+          x,
+          y: yTop,
+          height,
+          width,
+          fill: ordinalColorScale(key)
+        };
+
+        const textProps = {
+          attrs: {
+            x: x + width / 2,
+            y: yTop + height / 2
+          },
+
+          text: key
+        };
+
+        improvedTechBars.push({ bar, textProps, key: x + key });
+      }
+    });
+
+  return {
+    improvedTechBars
   };
 }
 

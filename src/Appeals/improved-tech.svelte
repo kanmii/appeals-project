@@ -2,34 +2,23 @@
   import { select as d3Select } from "d3-selection";
   import {
     computeBars,
+    getBarD3Helpers,
     BAR_HEIGHT,
     BAR_MARGINS,
     BAR_SVG_WIDTH,
     BAR_SVG_HEIGHT
   } from "./appeals-utils";
 
+  const barD3Helpers = getBarD3Helpers();
+
   let improvedTechBarsXAxisContainerDom;
   let improvedTechBarsYAxisContainerDom;
 
   export let improvedTechBars = [];
-  export let improvedTechFemaleCount = 0;
-  export let improvedTechMaleCount = 0;
-  export let maleCount = 0;
-  export let femaleCount = 0;
-  export let barD3Helpers = {};
-  export let dataReady;
-export let totalBeneficiaries = 0;
+  export let dataDistributions = {};
 
-  $: if (dataReady) {
-    const bars = computeBars({
-      improvedTechFemaleCount,
-      improvedTechMaleCount,
-      totalBeneficiaries,
-      femaleCount,
-      maleCount,
-      ...barD3Helpers
-    });
-
+  $: if (dataDistributions.dataReady) {
+    const bars = computeBars(dataDistributions, barD3Helpers);
     improvedTechBars = bars.improvedTechBars;
 
     const { xAxis, yAxis } = barD3Helpers;
