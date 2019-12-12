@@ -115,6 +115,8 @@
 
   <h3 class="title">Raw Data</h3>
 
+  <slot name="combinedDistributions" {dataDistributions} />
+
   <slot name="genderDistribution" {dataDistributions} {d3Helpers} />
 
   <slot name="ageDistribution" {dataDistributions} {d3Helpers} />

@@ -4,10 +4,15 @@
   import ImprovedTechDistribution from "./Appeals/improved-tech-distribution.svelte";
   import GenderDistribution from "./Appeals/gender-distribution.svelte";
   import AgeDistribution from "./Appeals/age-distribution.svelte";
+  import CombinedDistributions from "./Appeals/combined-distributions.svelte";
 </script>
 
 <main>
   <Appeals let:dataDistributions let:d3Helpers fetchDataFn={getCSVData}>
+    <div slot="combinedDistributions">
+      <CombinedDistributions {dataDistributions} />
+    </div>
+
     <div slot="genderDistribution">
       <GenderDistribution {dataDistributions} {d3Helpers} />
     </div>

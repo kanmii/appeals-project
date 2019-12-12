@@ -1,4 +1,8 @@
-import { axisBottom, axisLeft } from "d3-axis";
+import {
+  axisTop as d3AxisTop,
+  axisBottom as d3AxisBottom,
+  axisLeft as d3AxisLeft
+} from "d3-axis";
 import {
   scaleBand as d3ScaleBand,
   scaleLinear as d3ScaleLinear,
@@ -11,7 +15,7 @@ import { GENDER_FEMALE_DATA } from "./appeals-injectables.js";
 export const BAR_HEIGHT = 400;
 export const BAR_WIDTH = 400;
 export const BAR_MARGINS = {
-  top: 10,
+  top: 20,
   left: 50,
   right: 30,
   bottom: 20
@@ -20,21 +24,33 @@ export const BAR_MARGINS = {
 export const BAR_SVG_WIDTH = BAR_WIDTH + BAR_MARGINS.top + BAR_MARGINS.bottom;
 export const BAR_SVG_HEIGHT = BAR_HEIGHT + BAR_MARGINS.left + BAR_MARGINS.right;
 
-export const FEMALE_LABEL = "Female";
-export const MALE_LABEL = "Male";
-export const YOUTH_LABEL = "Youth";
-export const ADULT_LABEL = "Adult";
-export const CHILDREN_LABEL = "Children";
+const FEMALE_LABEL = "Female";
+const MALE_LABEL = "Male";
+const YOUTH_LABEL = "Youth";
+const ADULT_LABEL = "Adult";
+const CHILDREN_LABEL = "Children";
 const RECEIVED_ASSETS_LABEL = "Received Assets";
 const NO_RECEIVED_ASSETS_LABEL = "No Received Assets";
 const RECEIVED_TRAINING_LABEL = "Received Training";
 const NO_RECEIVED_TRAINING_LABEL = "No Received Training";
+const IMPROVED_TECH_LABEL = "Improved Tech";
+const NO_IMPROVED_TECH_LABEL = "Non Improved Tech";
+
+export const COMBINED_DISTRIBUTION_LABELS_LIST = [
+  FEMALE_LABEL,
+  MALE_LABEL,
+  YOUTH_LABEL,
+  ADULT_LABEL,
+  RECEIVED_TRAINING_LABEL,
+  NO_RECEIVED_TRAINING_LABEL,
+  RECEIVED_ASSETS_LABEL,
+  NO_RECEIVED_ASSETS_LABEL,
+  IMPROVED_TECH_LABEL,
+  NO_IMPROVED_TECH_LABEL
+];
+
 export const PIE_TRANSLATE = 250;
 export const PIE_LABEL_OFFSET = 50;
-
-// improved tech beneficiaries
-const IMPROVED_TECH_LABEL = "Improved Tech";
-const NON_IMPROVED_TECH_LABEL = "Non Improved Tech";
 
 export const initialGenderDistributionData = [FEMALE_LABEL, MALE_LABEL].reduce(
   (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
@@ -60,8 +76,8 @@ export function computeDistributions(data) {
   let youthCount = 0;
   let adultCount = 0;
   let childrenCount = 0;
-
-  const allDistributions = {};
+  let receivedAssetsCount = 0;
+  let receivedTrainingCount = 0;
 
   // ageDistributionMap
   data.reduce(
@@ -69,6 +85,14 @@ export function computeDistributions(data) {
       const { age, gender, improvedTech, receivedAssets, receivedTraining } = d;
 
       ++totalBeneficiaries;
+
+      if (receivedAssets) {
+        ++receivedAssetsCount;
+      }
+
+      if (receivedTraining) {
+        ++receivedTrainingCount;
+      }
 
       if (improvedTech) {
         ++totalImprovedTech;
@@ -104,13 +128,18 @@ export function computeDistributions(data) {
 
   const maleCount = totalBeneficiaries - femaleCount;
 
-  allDistributions[FEMALE_LABEL] = femaleCount;
-  allDistributions[MALE_LABEL] = maleCount;
-  allDistributions[IMPROVED_TECH_LABEL] = totalImprovedTech;
-  allDistributions[NON_IMPROVED_TECH_LABEL] =
-    totalBeneficiaries - totalImprovedTech;
-  allDistributions[YOUTH_LABEL] = youthCount;
-  allDistributions[ADULT_LABEL] = adultCount;
+  const combinedDistributions = {
+    [FEMALE_LABEL]: femaleCount,
+    [MALE_LABEL]: maleCount,
+    [IMPROVED_TECH_LABEL]: totalImprovedTech,
+    [NO_IMPROVED_TECH_LABEL]: totalBeneficiaries - totalImprovedTech,
+    [YOUTH_LABEL]: youthCount,
+    [ADULT_LABEL]: adultCount,
+    [RECEIVED_ASSETS_LABEL]: receivedAssetsCount,
+    [NO_RECEIVED_ASSETS_LABEL]: totalBeneficiaries - receivedAssetsCount,
+    [RECEIVED_TRAINING_LABEL]: receivedTrainingCount,
+    [NO_RECEIVED_TRAINING_LABEL]: totalBeneficiaries - receivedTrainingCount
+  };
 
   return {
     maleCount,
@@ -122,8 +151,63 @@ export function computeDistributions(data) {
     childrenCount,
     totalBeneficiaries,
     dataReady: true,
-    allDistributions
+    combinedDistributions
   };
+}
+
+export const COMBINED_BAR_CONTAINER_WIDTH = 800;
+export const COMBINED_BAR_CONTAINER_HEIGHT = 500;
+
+export function getCombinedChartHelpers() {
+  const chartHeight =
+    COMBINED_BAR_CONTAINER_HEIGHT - BAR_MARGINS.top - BAR_MARGINS.bottom;
+
+  const chartWidth =
+    COMBINED_BAR_CONTAINER_WIDTH - BAR_MARGINS.left - BAR_MARGINS.right;
+
+  const topScaleLinear = d3ScaleLinear().range([0, chartWidth]);
+
+  const leftScaleBand = d3ScaleBand()
+    .range([0, chartHeight])
+    .domain(COMBINED_DISTRIBUTION_LABELS_LIST)
+    .padding(0.2);
+
+  const xAxisTop = d3AxisTop(topScaleLinear);
+  const yAxisLeft = d3AxisLeft(leftScaleBand);
+
+  return {
+    chartHeight,
+    topScaleLinear,
+    leftScaleBand,
+    xAxisTop,
+    yAxisLeft,
+    chartWidth
+  };
+}
+
+export function computeCombinedBars(dataDistributions, chartHelpers) {
+  const { totalBeneficiaries, combinedDistributions } = dataDistributions;
+
+  const { topScaleLinear, leftScaleBand } = chartHelpers;
+
+  topScaleLinear.domain([0, totalBeneficiaries]);
+
+  const bars = [];
+  const bandWidth = leftScaleBand.bandwidth();
+  const x = 0;
+
+  COMBINED_DISTRIBUTION_LABELS_LIST.forEach(label => {
+    bars.push({
+      barProps: {
+        y: leftScaleBand(label),
+        x,
+        height: bandWidth,
+        width: topScaleLinear(combinedDistributions[label])
+      }
+    });
+  });
+
+  return { bars };
 }
 
 export function getBarD3Helpers() {
@@ -131,15 +215,15 @@ export function getBarD3Helpers() {
 
   const barXScaleBand = d3ScaleBand()
     .range([0, BAR_WIDTH])
-    .padding(0.2)
-    .domain([IMPROVED_TECH_LABEL, NON_IMPROVED_TECH_LABEL]);
+    .padding(0.04)
+    .domain([IMPROVED_TECH_LABEL, NO_IMPROVED_TECH_LABEL]);
 
   const ordinalColorScale = d3ScaleOrdinal()
     .domain([FEMALE_LABEL, MALE_LABEL])
     .range(["#e41a1c", "#377eb8", "#4daf4a"]);
 
-  const xAxis = axisBottom(barXScaleBand);
-  const yAxis = axisLeft(barYScale);
+  const xAxis = d3AxisBottom(barXScaleBand);
+  const yAxis = d3AxisLeft(barYScale);
 
   return { barYScale, barXScaleBand, ordinalColorScale, xAxis, yAxis };
 }
@@ -164,7 +248,7 @@ export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
       [FEMALE_LABEL]: improvedTechFemaleCount
     },
     {
-      improvementCategory: NON_IMPROVED_TECH_LABEL,
+      improvementCategory: NO_IMPROVED_TECH_LABEL,
       [MALE_LABEL]: maleCount - improvedTechMaleCount,
       [FEMALE_LABEL]: femaleCount - improvedTechFemaleCount
     }
