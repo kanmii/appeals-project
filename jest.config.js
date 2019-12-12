@@ -17,7 +17,7 @@ module.exports = {
   testRegex: "src/__tests__/.+?\\.test\\.js$",
   transform: {
     "^.+\\.js$": "babel-jest",
-    "^.+\\.svelte$": "svelte-jester"
+    "^.+\\.svelte$": "jest-transform-svelte"
   },
   watchPathIgnorePatterns: [
     "<rootDir>/node_modules*",

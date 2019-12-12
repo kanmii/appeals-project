@@ -19,6 +19,7 @@
     "eslint-plugin-svelte3": "^2.7.3",
     "jest": "^24.9.0",
     "jest-environment-jsdom-fourteen": "^1.0.1",
+    "jest-transform-svelte": "^2.1.0",
     "netlify-cli": "^2.24.0",
     "prettier": "^1.19.1",
     "prettier-plugin-svelte": "^0.7.0",
@@ -28,8 +29,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-svelte": "^5.0.3",
     "rollup-plugin-terser": "^5.1.2",
-    "svelte": "3.15.0",
-    "svelte-jester": "^1.0.3"
+    "svelte": "3.15.0"
   },
   "dependencies": {
     "d3-axis": "^1.0.12",
