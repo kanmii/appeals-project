@@ -192,19 +192,35 @@ export function computeCombinedBars(dataDistributions, chartHelpers) {
 
   topScaleLinear.domain([0, totalBeneficiaries]);
 
-  const bars = [];
   const bandWidth = leftScaleBand.bandwidth();
+  const halfHeight = bandWidth / 2;
   const x = 0;
 
-  COMBINED_DISTRIBUTION_LABELS_LIST.forEach(label => {
-    bars.push({
+  const bars = COMBINED_DISTRIBUTION_LABELS_LIST.map(label => {
+    const y = leftScaleBand(label);
+    const labelProps = {
+      x,
+      y: y + halfHeight
+    };
+
+    labelProps.textSpanProps = label.split(" ").reduce((acc, text) => {
+      acc.push({
+        text,
+        dy: 0.5
+      });
+
+      return acc;
+    }, []);
+
+    return {
       barProps: {
-        y: leftScaleBand(label),
+        y,
         x,
         height: bandWidth,
         width: topScaleLinear(combinedDistributions[label])
-      }
-    });
+      },
+      labelProps
+    };
   });
 
   return { bars };

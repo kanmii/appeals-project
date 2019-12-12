@@ -25,7 +25,7 @@
     const { xAxisTop, yAxisLeft } = chartHelpers;
 
     d3Select(topAxisDomRef).call(xAxisTop);
-    d3Select(leftAxisDomRef).call(yAxisLeft);
+    /* d3Select(leftAxisDomRef).call(yAxisLeft); */
   }
 </script>
 
@@ -48,3 +48,7 @@
   </g>
 
 </svg>
+
+<pre>{
+  JSON.stringify(bars, null, 2)
+}</pre>

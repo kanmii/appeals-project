@@ -1,5 +1,6 @@
 import { render, wait } from "@testing-library/svelte";
 import Appeals from "../Appeals/appeals.svelte";
+import CombinedChart from "../Appeals/combined-distributions";
 
 const data = [
   {
@@ -121,6 +122,30 @@ const data = [
   }
 ];
 
+const distributions = {
+  maleCount: 7,
+  femaleCount: 6,
+  improvedTechMaleCount: 5,
+  improvedTechFemaleCount: 4,
+  youthCount: 8,
+  adultCount: 5,
+  childrenCount: 0,
+  totalBeneficiaries: 13,
+  dataReady: true,
+  combinedDistributions: {
+    Female: 6,
+    Male: 7,
+    "Improved Tech": 9,
+    "Non Improved Tech": 4,
+    Youth: 8,
+    Adult: 5,
+    "Received Assets": 7,
+    "No Received Assets": 6,
+    "Received Training": 9,
+    "No Received Training": 4
+  }
+};
+
 it("renders component without data", () => {
   render(Appeals, {
     fetchDataFn: () => []
@@ -135,7 +160,13 @@ it("renders component with data", async () => {
     fetchDataFn: mockFetchDataFn
   });
 
-  await wait(() => true)
+  await wait(() => true);
+});
+
+it.only("renders combined chart", () => {
+  render(CombinedChart, {
+    dataDistributions: distributions
+  });
 });
 
 // Note: This is as an async test as we are using `fireEvent`
