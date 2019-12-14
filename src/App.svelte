@@ -13,17 +13,17 @@
       <CombinedDistributions {dataDistributions} />
     </div>
 
-    <!-- <div slot="genderDistribution"> -->
-    <!--   <GenderDistribution {dataDistributions} {d3Helpers} /> -->
-    <!-- </div> -->
+    <div slot="genderDistribution">
+      <GenderDistribution {dataDistributions} {d3Helpers} />
+    </div>
 
-    <!-- <div slot="ageDistribution"> -->
-    <!--   <AgeDistribution {dataDistributions} {d3Helpers} /> -->
-    <!-- </div> -->
+    <div slot="ageDistribution">
+      <AgeDistribution {dataDistributions} {d3Helpers} />
+    </div>
 
-    <!-- <div slot="improvedTechDistribution"> -->
-    <!--   <ImprovedTechDistribution {dataDistributions} /> -->
-    <!-- </div> -->
+    <div slot="improvedTechDistribution">
+      <ImprovedTechDistribution {dataDistributions} />
+    </div>
 
   </Appeals>
 </main>
