@@ -29,12 +29,12 @@ const MALE_LABEL = "Male";
 const YOUTH_LABEL = "Youth";
 const ADULT_LABEL = "Adult";
 const CHILDREN_LABEL = "Children";
-const RECEIVED_ASSETS_LABEL = "Received Assets";
-const NO_RECEIVED_ASSETS_LABEL = "No Received Assets";
-const RECEIVED_TRAINING_LABEL = "Received Training";
-const NO_RECEIVED_TRAINING_LABEL = "No Received Training";
-const IMPROVED_TECH_LABEL = "Improved Tech";
-const NO_IMPROVED_TECH_LABEL = "Non Improved Tech";
+const RECEIVED_ASSETS_LABEL = "Received\nAssets";
+const NO_RECEIVED_ASSETS_LABEL = "No Received\nAssets";
+const RECEIVED_TRAINING_LABEL = "Received\nTraining";
+const NO_RECEIVED_TRAINING_LABEL = "No Received\nTraining";
+const IMPROVED_TECH_LABEL = "Improved\nTech";
+const NO_IMPROVED_TECH_LABEL = "Non Improved\nTech";
 
 export const COMBINED_DISTRIBUTION_LABELS_LIST = [
   FEMALE_LABEL,
@@ -188,7 +188,7 @@ export function getCombinedChartHelpers() {
 export function computeCombinedBars(dataDistributions, chartHelpers) {
   const { totalBeneficiaries, combinedDistributions } = dataDistributions;
 
-  const { topScaleLinear, leftScaleBand } = chartHelpers;
+  const { topScaleLinear, leftScaleBand} = chartHelpers;
 
   topScaleLinear.domain([0, totalBeneficiaries]);
 
@@ -199,18 +199,21 @@ export function computeCombinedBars(dataDistributions, chartHelpers) {
   const bars = COMBINED_DISTRIBUTION_LABELS_LIST.map(label => {
     const y = leftScaleBand(label);
     const labelProps = {
-      x,
       y: y + halfHeight
     };
 
-    labelProps.textSpanProps = label.split(" ").reduce((acc, text) => {
-      acc.push({
-        text,
-        dy: 0.5
-      });
+    const words = label.split("\n");
+    let wordIndex = 0;
+    const wordsLen = words.length;
+    const textSpanProps = [{ text: words[wordIndex] }];
+    labelProps.textSpanProps = textSpanProps;
 
-      return acc;
-    }, []);
+    for (++wordIndex; wordIndex < wordsLen; wordIndex++) {
+      textSpanProps.push({
+        text: words[wordIndex],
+        dy: 15
+      });
+    }
 
     return {
       barProps: {

@@ -25,7 +25,7 @@
     const { xAxisTop, yAxisLeft } = chartHelpers;
 
     d3Select(topAxisDomRef).call(xAxisTop);
-    /* d3Select(leftAxisDomRef).call(yAxisLeft); */
+    d3Select(leftAxisDomRef).call(yAxisLeft);
   }
 </script>
 
@@ -47,8 +47,23 @@
     {/each}
   </g>
 
+  {#if dataDistributions.dataReady}
+    <g
+      transform="translate({BAR_MARGINS.left + 10},{BAR_MARGINS.top})"
+      id="dodo"
+      font-size="10">
+
+      {#each bars.bars as { labelProps: { x, y, textSpanProps } } (y)}
+        <text x="20" {y} text-anchorx="middle">
+          {#each textSpanProps as s, index}
+            <tspan x="20" dy={s.dy}>{s.text}</tspan>
+          {/each}
+        </text>
+      {/each}
+
+    </g>
+  {/if}
+
 </svg>
 
-<pre>{
-  JSON.stringify(bars, null, 2)
-}</pre>
+<pre>{JSON.stringify(bars, null, 2)}</pre>

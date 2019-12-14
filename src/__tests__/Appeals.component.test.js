@@ -163,7 +163,7 @@ it("renders component with data", async () => {
   await wait(() => true);
 });
 
-it.only("renders combined chart", () => {
+it("renders combined chart", () => {
   render(CombinedChart, {
     dataDistributions: distributions
   });
