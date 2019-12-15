@@ -286,7 +286,7 @@ export function combinedBarChartCustomLeftAxis(
   const maxTextLen = fontSizePixel * 5; // 5em
 
   d3SelectedLeftAxis.selectAll(".tick text").each(function(label) {
-    const svgNodeText = <SVGTextElement>this;
+    const svgNodeText = this as SVGTextElement;
 
     svgNodeText.textContent = "";
     const x = svgNodeText.getAttribute("x") as string;
@@ -313,10 +313,12 @@ export function combinedBarChartCustomLeftAxis(
         svgNodeTSpan.textContent = wordsLine.join(" ");
         wordsLine = [word];
 
-        const firstSvgNodeTSpan = <SVGTextElement>svgNodeText.firstElementChild;
+        const firstSvgNodeTSpan = svgNodeText.firstElementChild as SVGTextElement;
 
         const dyNumberEm = parseFloat(
-          /[\d.]+/.exec(<string>firstSvgNodeTSpan.getAttribute("dy"))[0]
+          (/[\d.]+/.exec(
+            firstSvgNodeTSpan.getAttribute("dy") as string
+          ) as string[])[0]
         );
 
         firstSvgNodeTSpan.setAttribute(
@@ -364,7 +366,10 @@ export function getBarD3Helpers() {
   return { barYScale, barXScaleBand, ordinalColorScale, xAxis, yAxis };
 }
 
-export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
+export function computeImprovedTechBarsAndData(
+  dataDistributions: ComputedDistribution,
+  barHelpers: BarD3Helpers
+) {
   const { barYScale, barXScaleBand, ordinalColorScale } = barHelpers;
 
   const {
@@ -390,7 +395,25 @@ export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
     }
   ];
 
-  const improvedTechBars = [];
+  const improvedTechBars: {
+    bar: {
+      x: number;
+      y: number;
+      height: number;
+      width: number;
+      fill: string;
+    };
+
+    textProps: {
+      attrs: {
+        x: number;
+        y: number;
+      };
+      text: string;
+    };
+
+    key: string;
+  }[] = [];
   const width = barXScaleBand.bandwidth();
 
   d3Stack()
@@ -405,9 +428,15 @@ export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
         const yBottom = barYScale(nextBar[0]);
         const yTop = barYScale(nextBar[1]);
         const height = yBottom - yTop;
-        const x = barXScaleBand(nextBar.data.improvementCategory);
+        const x = barXScaleBand(nextBar.data.improvementCategory) as number;
 
-        const bar = { x, y: yTop, height, width, fill: ordinalColorScale(key) };
+        const bar = {
+          x,
+          y: yTop,
+          height,
+          width,
+          fill: ordinalColorScale(key) as string
+        };
 
         const textProps = {
           attrs: { x: x + width / 2, y: yTop + height / 2 },
@@ -424,19 +453,25 @@ export function computeImprovedTechBarsAndData(dataDistributions, barHelpers) {
 
 const totalAngle = Math.PI * 2;
 
-export function computeGenderCategoryArcsAndData(dataDistribution, helpers) {
+export function computeGenderCategoryArcsAndData(
+  dataDistribution: ComputedDistribution,
+  helpers: BarD3Helpers
+) {
   const { femaleCount, maleCount, totalBeneficiaries } = dataDistribution;
   const { arcGenerator, linearColorScale } = helpers;
 
   linearColorScale.domain([maleCount, femaleCount]);
 
   let startAngle = 0;
-  const genderDistributionData = {};
+  const genderDistributionData = {} as {
+    [FEMALE_LABEL]: { count: number; percent: string };
+    [MALE_LABEL]: { count: number; percent: string };
+  };
 
-  const genderDistributionArcs = [
+  const genderDistributionArcs = ([
     [femaleCount, FEMALE_LABEL],
     [maleCount, MALE_LABEL]
-  ]
+  ] as [number, keyof typeof genderDistributionData][])
     .filter(([count]) => count > 0)
     .map(([count, label]) => {
       const fraction = count / totalBeneficiaries;
