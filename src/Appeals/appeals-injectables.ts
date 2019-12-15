@@ -1,7 +1,3 @@
-// @ts-check
-/** @typedef { import('./appeals-types').MappedData } MappedData */
-/** @typedef { import('./appeals-types').HeaderMapping } HeaderMapping */
-/** @typedef { import('./appeals-types').ValueOfMappedData } ValueOfMappedData */
 import { csvParse } from "d3-dsv";
 
 // KPI1:Number of beneficiaries supported by the project (of which women and youths%)
@@ -13,8 +9,7 @@ import { csvParse } from "d3-dsv";
 
 // another table can take care of KPI4. May look like Technology Title(improved seedlings/fertilizer application/etc), Category(climate sensitive,nutrition sensitive,others)
 
-/** @type {HeaderMapping} */
-export const headerMapping = {
+export const headerMapping: HeaderMapping = {
   NAME: "name",
   GENDER: "gender",
   AGE: "age",
@@ -32,33 +27,28 @@ export async function getCSVData() {
     const rawBinaries = await fetch("/lagos-appeals.csv");
     const textData = await rawBinaries.text();
     return csvParse(textData, d => {
-      const data = Object.entries(d).reduce(
-        /**
-         * @param {MappedData} acc
-         */
-        (acc, currentValue) => {
-          const [k, value] = currentValue;
-          const v = /** @type {string} */ (value);
+      const data = Object.entries(d).reduce((acc, currentValue) => {
+        const [k, value] = currentValue;
+        const v = value as string;
 
-          const newKey = headerMapping[k];
-          const vLower = v.toLowerCase();
+        const newKey = headerMapping[k];
+        const vLower = v.toLowerCase();
 
-          /** @type {ValueOfMappedData} */
-          let newValue = v;
+        let newValue = v as ValueOfMappedData;
 
-          if (vLower === "yes") {
-            newValue = true;
-          } else if (vLower === "no") {
-            newValue = false;
-          }
+        if (vLower === "yes") {
+          newValue = true;
+        } else if (vLower === "no") {
+          newValue = false;
+        }
 
+        Object.defineProperty(acc, newKey, {
+          value: newValue,
+          writable: true
+        });
 
-          acc[newKey] = newValue;
-
-          return acc;
-        },
-        /** @type {MappedData} */ ({})
-      );
+        return acc;
+      }, {} as MappedData);
 
       data.age = +data.age;
       return data;
@@ -67,3 +57,19 @@ export async function getCSVData() {
     return [];
   }
 }
+
+////////////////////////// TYPES ////////////////////////////
+
+export interface MappedData {
+  name: string;
+  gender: string;
+  segment: string;
+  receivedAssets: boolean;
+  improvedTech: boolean;
+  receivedTraining: boolean;
+  age: number;
+}
+
+type KeyOfMappedData = keyof MappedData;
+type ValueOfMappedData = MappedData[KeyOfMappedData];
+type HeaderMapping = { [k: string]: KeyOfMappedData };

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { headerMapping } from "./appeals-injectables.js";
+  import { headerMapping } from "./appeals-injectables";
   import { computeDistributions } from "./appeals-utils";
   import { scaleLinear as d3ScaleLinear } from "d3-scale";
   import { arc as d3Arc } from "d3-shape";
