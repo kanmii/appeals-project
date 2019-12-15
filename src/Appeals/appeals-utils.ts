@@ -9,8 +9,12 @@ import {
   scaleOrdinal as d3ScaleOrdinal
 } from "d3-scale";
 import { stack as d3Stack } from "d3-shape";
-
 import { GENDER_FEMALE_DATA } from "./appeals-injectables.js";
+import { max as d3Max } from "d3-array";
+import { Selection } from "d3-selection";
+
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+import { select as d3Select } from "d3-selection";
 
 export const BAR_HEIGHT = 400;
 export const BAR_WIDTH = 400;
@@ -29,12 +33,12 @@ const MALE_LABEL = "Male";
 const YOUTH_LABEL = "Youth";
 const ADULT_LABEL = "Adult";
 const CHILDREN_LABEL = "Children";
-const RECEIVED_ASSETS_LABEL = "Received\nAssets";
-const NO_RECEIVED_ASSETS_LABEL = "No Received\nAssets";
-const RECEIVED_TRAINING_LABEL = "Received\nTraining";
-const NO_RECEIVED_TRAINING_LABEL = "No Received\nTraining";
-const IMPROVED_TECH_LABEL = "Improved\nTech";
-const NO_IMPROVED_TECH_LABEL = "Non Improved\nTech";
+const RECEIVED_ASSETS_LABEL = "Received Assets";
+const NO_RECEIVED_ASSETS_LABEL = "No Received Assets";
+const RECEIVED_TRAINING_LABEL = "Received Training";
+const NO_RECEIVED_TRAINING_LABEL = "No Received Training";
+const IMPROVED_TECH_LABEL = "Improved Tech";
+const NO_IMPROVED_TECH_LABEL = "Non Improved Tech";
 
 export const COMBINED_DISTRIBUTION_LABELS_LIST = [
   FEMALE_LABEL,
@@ -158,12 +162,18 @@ export function computeDistributions(data) {
 export const COMBINED_BAR_CONTAINER_WIDTH = 800;
 export const COMBINED_BAR_CONTAINER_HEIGHT = 500;
 
-export function getCombinedChartHelpers() {
+export function combinedBarChartInitD3() {
+  const margins = {
+    top: 20,
+    left: 80,
+    right: 30,
+    bottom: 20
+  };
   const chartHeight =
-    COMBINED_BAR_CONTAINER_HEIGHT - BAR_MARGINS.top - BAR_MARGINS.bottom;
+    COMBINED_BAR_CONTAINER_HEIGHT - margins.top - margins.bottom;
 
   const chartWidth =
-    COMBINED_BAR_CONTAINER_WIDTH - BAR_MARGINS.left - BAR_MARGINS.right;
+    COMBINED_BAR_CONTAINER_WIDTH - margins.left - margins.right;
 
   const topScaleLinear = d3ScaleLinear().range([0, chartWidth]);
 
@@ -181,20 +191,20 @@ export function getCombinedChartHelpers() {
     leftScaleBand,
     xAxisTop,
     yAxisLeft,
-    chartWidth
+    chartWidth,
+    bandWidth: leftScaleBand.bandwidth(),
+    margins
   };
 }
 
 export function computeCombinedBars(dataDistributions, chartHelpers) {
-  const { totalBeneficiaries, combinedDistributions } = dataDistributions;
+  const { combinedDistributions } = dataDistributions;
 
-  const { topScaleLinear, leftScaleBand} = chartHelpers;
+  const { topScaleLinear, leftScaleBand, bandWidth } = chartHelpers;
 
-  topScaleLinear.domain([0, totalBeneficiaries]);
+  topScaleLinear.domain([0, d3Max(Object.values(combinedDistributions))]);
 
-  const bandWidth = leftScaleBand.bandwidth();
   const halfHeight = bandWidth / 2;
-  const x = 0;
 
   const bars = COMBINED_DISTRIBUTION_LABELS_LIST.map(label => {
     const y = leftScaleBand(label);
@@ -218,8 +228,6 @@ export function computeCombinedBars(dataDistributions, chartHelpers) {
     return {
       barProps: {
         y,
-        x,
-        height: bandWidth,
         width: topScaleLinear(combinedDistributions[label])
       },
       labelProps
@@ -227,6 +235,70 @@ export function computeCombinedBars(dataDistributions, chartHelpers) {
   });
 
   return { bars };
+}
+
+export function combinedBarChartCustomLeftAxis(
+  d3SelectedLeftAxis: Selection,
+  d3YAxisLeft: typeof d3AxisLeft
+) {
+  const lineHeightEm = 1.2;
+  const halfLineHeightEm = lineHeightEm / 2;
+
+  d3SelectedLeftAxis = d3SelectedLeftAxis.call(d3YAxisLeft);
+  const fontSizePixel = parseFloat(d3SelectedLeftAxis.attr("font-size"));
+  const maxTextLen = fontSizePixel * 5; // 5em
+
+  d3SelectedLeftAxis.selectAll(".tick text").each(function(label: string) {
+    const svgNodeText = <SVGTextElement>this
+
+    svgNodeText.textContent = "";
+    const x = svgNodeText.getAttribute("x") as string;
+
+    let word = "";
+
+    let wordsLine: string[] = [];
+    const words = label.split(/\s+/).reverse();
+
+    let svgNodeTSpan = svgNodeText.appendChild(
+      document.createElementNS("http://www.w3.org/2000/svg", "tspan")
+    );
+    svgNodeTSpan.setAttribute("x", x);
+    svgNodeTSpan.setAttribute("dy", svgNodeText.getAttribute("dy") as string);
+
+    svgNodeText.removeAttribute("dy");
+
+    while ((word = words.pop() as string)) {
+      wordsLine.push(word);
+      svgNodeTSpan.textContent = wordsLine.join(" ");
+
+      if (svgNodeTSpan.getComputedTextLength() > maxTextLen) {
+        wordsLine.pop();
+        svgNodeTSpan.textContent = wordsLine.join(" ");
+        wordsLine = [word];
+
+        const firstSvgNodeTSpan = <SVGTextElement>svgNodeText.firstElementChild;
+
+        const dyNumberEm = parseFloat(
+          /[\d.]+/.exec(<string>firstSvgNodeTSpan.getAttribute("dy"))[0]
+        );
+
+        firstSvgNodeTSpan.setAttribute(
+          "dy",
+          `${dyNumberEm - halfLineHeightEm}em`
+        );
+
+        svgNodeTSpan = svgNodeText.appendChild(
+          document.createElementNS("http://www.w3.org/2000/svg", "tspan")
+        );
+
+        svgNodeTSpan.setAttribute("x", x);
+        svgNodeTSpan.setAttribute("dy", `${lineHeightEm}em`);
+        svgNodeTSpan.textContent = word;
+      }
+    }
+
+    svgNodeText.style.fontWeight = "bold";
+  });
 }
 
 export function getBarD3Helpers() {
@@ -330,7 +402,7 @@ export function computeGenderCategoryArcsAndData(dataDistribution, helpers) {
         innerRadius: 0,
         outerRadius: 220,
         startAngle: startAngle,
-        endAngle: (startAngle += fraction * totalAngle)
+        endAngle: startAngle += fraction * totalAngle
       };
 
       const [labelX, labelY] = arcGenerator.centroid(arcOption);
@@ -377,7 +449,7 @@ export function computeAgeDistributionArcsAndData(dataDistribution, helpers) {
         innerRadius: 0,
         outerRadius: 150,
         startAngle: startAngle,
-        endAngle: (startAngle += fraction * totalAngle)
+        endAngle: startAngle += fraction * totalAngle
       };
 
       const [labelX, labelY] = arcGenerator.centroid(arcOption);

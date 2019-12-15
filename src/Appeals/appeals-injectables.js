@@ -1,3 +1,7 @@
+// @ts-check
+/** @typedef { import('./appeals-types').MappedData } MappedData */
+/** @typedef { import('./appeals-types').HeaderMapping } HeaderMapping */
+/** @typedef { import('./appeals-types').ValueOfMappedData } ValueOfMappedData */
 import { csvParse } from "d3-dsv";
 
 // KPI1:Number of beneficiaries supported by the project (of which women and youths%)
@@ -9,6 +13,7 @@ import { csvParse } from "d3-dsv";
 
 // another table can take care of KPI4. May look like Technology Title(improved seedlings/fertilizer application/etc), Category(climate sensitive,nutrition sensitive,others)
 
+/** @type {HeaderMapping} */
 export const headerMapping = {
   NAME: "name",
   GENDER: "gender",
@@ -27,14 +32,33 @@ export async function getCSVData() {
     const rawBinaries = await fetch("/lagos-appeals.csv");
     const textData = await rawBinaries.text();
     return csvParse(textData, d => {
-      const data = Object.entries(d).reduce((acc, [k, v]) => {
-        const newKey = headerMapping[k];
-        const vLower = v.toLowerCase();
+      const data = Object.entries(d).reduce(
+        /**
+         * @param {MappedData} acc
+         */
+        (acc, currentValue) => {
+          const [k, value] = currentValue;
+          const v = /** @type {string} */ (value);
 
-        acc[newKey] = vLower === "yes" ? true : vLower === "no" ? false : v;
+          const newKey = headerMapping[k];
+          const vLower = v.toLowerCase();
 
-        return acc;
-      }, {});
+          /** @type {ValueOfMappedData} */
+          let newValue = v;
+
+          if (vLower === "yes") {
+            newValue = true;
+          } else if (vLower === "no") {
+            newValue = false;
+          }
+
+
+          acc[newKey] = newValue;
+
+          return acc;
+        },
+        /** @type {MappedData} */ ({})
+      );
 
       data.age = +data.age;
       return data;

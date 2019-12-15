@@ -1,3 +1,4 @@
+// @ts-check
 import { render, wait } from "@testing-library/svelte";
 import Appeals from "../Appeals/appeals.svelte";
 import CombinedChart from "../Appeals/combined-distributions";

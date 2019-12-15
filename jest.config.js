@@ -12,12 +12,16 @@ module.exports = {
     "!src/**/*injectables.js"
   ],
   coverageDirectory: "coverage",
-  moduleFileExtensions: ["js", "json", "svelte"],
+  moduleFileExtensions: ["js", "json", "svelte", "ts"],
   // testEnvironment: "jest-environment-jsdom-fourteen",
   testRegex: "src/__tests__/.+?\\.test\\.js$",
   transform: {
     "^.+\\.js$": "babel-jest",
-    "^.+\\.svelte$": "jest-transform-svelte"
+    "^.+\\.ts$": "<rootDir>/node_modules/babel-jest",
+    "^.+\\.svelte$": [
+      "jest-transform-svelte",
+      { preprocess: require("svelte-preprocess")() }
+    ]
   },
   watchPathIgnorePatterns: [
     "<rootDir>/node_modules*",

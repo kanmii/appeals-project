@@ -1,5 +1,9 @@
 {
-  "extends": "eslint:recommended",
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "prettier/@typescript-eslint"
+  ],
   "parserOptions": {
     "ecmaVersion": 2019,
     "sourceType": "module"
@@ -7,9 +11,10 @@
   "env": {
     "es6": true,
     "browser": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
   },
-  "plugins": ["svelte3"],
+  "plugins": ["svelte3", "jest"],
   "overrides": [
     {
       "files": ["**/*.svelte"],
@@ -17,6 +22,8 @@
     }
   ],
   "rules": {
-    "no-cond-assign": 0
+    "no-cond-assign": 0,
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-this-alias": "off"
   }
 }

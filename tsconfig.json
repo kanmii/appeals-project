@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ESNEXT",
+    "module": "ESNEXT",
+    "strict": true,
+    "moduleResolution": "node",
+    "types": [
+      "@pyoner/svelte-types",
+      "jest",
+      "d3-array",
+      "d3-axis",
+      "d3-scale",
+      "d3-selection",
+      "d3-shape",
+      "d3-dsv"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "outDir": "myOutDir"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "public", "config", ".cache"]
+}

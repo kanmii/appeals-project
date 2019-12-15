@@ -1,15 +1,16 @@
-<script>
+<script type="text/typescript">
   import {
     COMBINED_BAR_CONTAINER_WIDTH,
     COMBINED_BAR_CONTAINER_HEIGHT,
-    BAR_MARGINS,
     computeCombinedBars,
-    getCombinedChartHelpers
+    combinedBarChartInitD3,
+    combinedBarChartCustomLeftAxis
   } from "./appeals-utils";
 
   import { select as d3Select } from "d3-selection";
 
-  const chartHelpers = getCombinedChartHelpers();
+  const chartHelpers = combinedBarChartInitD3();
+  const { bandWidth, margins } = chartHelpers;
 
   let bars = {
     bars: []
@@ -25,26 +26,33 @@
     const { xAxisTop, yAxisLeft } = chartHelpers;
 
     d3Select(topAxisDomRef).call(xAxisTop);
-    d3Select(leftAxisDomRef).call(yAxisLeft);
+
+    d3Select(leftAxisDomRef).call(
+      combinedBarChartCustomLeftAxis,
+      yAxisLeft,
+      bandWidth
+    );
   }
 </script>
 
 <svg
-  width={COMBINED_BAR_CONTAINER_WIDTH}
-  height={COMBINED_BAR_CONTAINER_HEIGHT}>
+  class="combined-charts"
+  width="{COMBINED_BAR_CONTAINER_WIDTH}"
+  height="{COMBINED_BAR_CONTAINER_HEIGHT}"
+>
+  <g
+    bind:this="{leftAxisDomRef}"
+    transform="translate({margins.left},{margins.top})"
+  />
 
   <g
-    bind:this={leftAxisDomRef}
-    transform="translate({BAR_MARGINS.left},{BAR_MARGINS.top})" />
+    bind:this="{topAxisDomRef}"
+    transform="translate({margins.left},{margins.top})"
+  />
 
-  <g
-    bind:this={topAxisDomRef}
-    transform="translate({BAR_MARGINS.left},{BAR_MARGINS.top})" />
-
-  <g transform="translate({BAR_MARGINS.left},{BAR_MARGINS.top})">
+  <g transform="translate({margins.left},{margins.top})">
     {#each bars.bars as { barProps } (barProps.y)}
-      <rect {...barProps} fill="blue" />
+    <rect height="{bandWidth}" x="0" {...barProps} fill="blue" />
     {/each}
   </g>
-
 </svg>
