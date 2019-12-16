@@ -5,7 +5,7 @@
     "strict": true,
     "moduleResolution": "node",
     "types": [
-      "@pyoner/svelte-types",
+      "svelte",
       "jest",
       "d3-array",
       "d3-axis",

@@ -10,13 +10,13 @@
     "test:c": "yarn test --coverage",
     "autobuild": "rollup -c -w",
     "dev": "run-p start:dev autobuild",
-    "start:dev": "sirv public --dev"
+    "start:dev": "sirv public --dev",
+    "type-check": "tsc --noEmit --project ."
   },
   "devDependencies": {
     "@babel/core": "^7.7.5",
     "@babel/preset-env": "^7.7.6",
     "@babel/preset-typescript": "^7.7.4",
-    "@pyoner/svelte-types": "^3.4.4-2",
     "@rollup/plugin-typescript": "^2.0.1",
     "@testing-library/svelte": "^1.11.0",
     "@types/d3-array": "^2.0.0",

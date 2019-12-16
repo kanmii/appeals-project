@@ -1,13 +1,16 @@
-<script>
+<script type="text/typescript">
   import {
     computeAgeDistributionArcsAndData,
     initialAgeDistributionData,
-    PIE_TRANSLATE
+    PIE_TRANSLATE,
+    ArcD3Helpers,
+    DistributionArc,
+    ComputedDistribution
   } from "./appeals-utils";
 
-  export let dataDistributions = {};
-  export let d3Helpers;
-  export let ageDistributionArcs = [];
+  export let dataDistributions = {} as ComputedDistribution;
+  export let d3Helpers = {} as ArcD3Helpers;
+  export let ageDistributionArcs = [] as DistributionArc[];
   export let ageDistributionData = initialAgeDistributionData;
 
   $: if (dataDistributions.dataReady) {
@@ -30,20 +33,12 @@
 <div class="chart-container age-distribution">
   <svg width="500" height="500">
     <g transform="translate({PIE_TRANSLATE},{PIE_TRANSLATE})">
-    {#each ageDistributionArcs as { arcProps, labelProps:{x, y, labelText} }}
+      {#each ageDistributionArcs as { arcProps, labelProps: { x, y, labelText } }}
         <path {...arcProps} stroke="white" />
 
-        <text
-          class="outline"
-          text-anchor="middle"
-          x={x}
-          y={y}>
-          {labelText}
-        </text>
+        <text class="outline" text-anchor="middle" {x} {y}>{labelText}</text>
 
-        <text x={x} y={y} text-anchor="middle">
-          {labelText}
-        </text>
+        <text {x} {y} text-anchor="middle">{labelText}</text>
       {/each}
     </g>
   </svg>

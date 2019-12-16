@@ -5,12 +5,11 @@
 module.exports = {
   clearMocks: true,
   collectCoverageFrom: [
-    "src/**/*.js",
-    "src/**/*.svelte",
+    "src/**/*.(ts|svelte|js)",
     "!src/main.js",
     "!src/App.svelte",
     "!src/__tests__/**",
-    "!src/**/*injectables.js"
+    "!src/**/*injectables.[tj]s"
   ],
   coverageDirectory: "coverage",
   moduleFileExtensions: ["js", "json", "svelte", "ts"],

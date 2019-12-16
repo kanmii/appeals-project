@@ -1,10 +1,13 @@
 <script type="text/typescript">
+  import { onMount } from "svelte";
   import {
     COMBINED_BAR_CONTAINER_WIDTH,
     COMBINED_BAR_CONTAINER_HEIGHT,
     computeCombinedBars,
     combinedBarChartInitD3,
-    combinedBarChartCustomLeftAxis
+    combinedBarChartCustomLeftAxis,
+    ComputedDistribution,
+    CombinedChartData
   } from "./appeals-utils";
 
   import { select as d3Select } from "d3-selection";
@@ -14,45 +17,64 @@
 
   let bars = {
     bars: []
-  };
-  let leftAxisDomRef;
-  let topAxisDomRef;
+  } as CombinedChartData;
 
-  export let dataDistributions = {};
+  let leftAxisDomRef = (null as unknown) as SVGSVGElement;
+  let topAxisDomRef = (null as unknown) as SVGSVGElement;
+
+  export let dataDistributions = {} as ComputedDistribution;
+
+  interface StateMachine {
+    renderingAxis: { value: "rendered" } | { value: "notRendered" };
+  }
+
+  let stateMachine: StateMachine = {
+    renderingAxis: { value: "notRendered" }
+  };
+
+  onMount(() => {
+    renderAxis();
+  });
 
   $: if (dataDistributions.dataReady) {
     bars = computeCombinedBars(dataDistributions, chartHelpers);
+    renderAxis();
+  }
+
+  function renderAxis() {
+    if (
+      !dataDistributions.dataReady ||
+      !leftAxisDomRef ||
+      !topAxisDomRef ||
+      stateMachine.renderingAxis.value === "rendered"
+    ) {
+      return;
+    }
 
     const { xAxisTop, yAxisLeft } = chartHelpers;
 
     d3Select(topAxisDomRef).call(xAxisTop);
+    combinedBarChartCustomLeftAxis(leftAxisDomRef, yAxisLeft);
 
-    d3Select(leftAxisDomRef).call(
-      combinedBarChartCustomLeftAxis,
-      yAxisLeft,
-      bandWidth
-    );
+    stateMachine = { ...stateMachine, renderingAxis: { value: "rendered" } };
   }
 </script>
 
 <svg
   class="combined-charts"
-  width="{COMBINED_BAR_CONTAINER_WIDTH}"
-  height="{COMBINED_BAR_CONTAINER_HEIGHT}"
->
+  width={COMBINED_BAR_CONTAINER_WIDTH}
+  height={COMBINED_BAR_CONTAINER_HEIGHT}>
   <g
-    bind:this="{leftAxisDomRef}"
-    transform="translate({margins.left},{margins.top})"
-  />
+    bind:this={leftAxisDomRef}
+    transform="translate({margins.left},{margins.top})" />
 
   <g
-    bind:this="{topAxisDomRef}"
-    transform="translate({margins.left},{margins.top})"
-  />
+    bind:this={topAxisDomRef}
+    transform="translate({margins.left},{margins.top})" />
 
   <g transform="translate({margins.left},{margins.top})">
     {#each bars.bars as { barProps } (barProps.y)}
-    <rect height="{bandWidth}" x="0" {...barProps} fill="blue" />
+      <rect height={bandWidth} x="0" {...barProps} fill="blue" />
     {/each}
   </g>
 </svg>
