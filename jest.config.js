@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 // For a detailed explanation regarding each configuration property, visit:
 // https://jestjs.io/docs/en/configuration.html
 
@@ -13,8 +14,8 @@ module.exports = {
   ],
   coverageDirectory: "coverage",
   moduleFileExtensions: ["js", "json", "svelte", "ts"],
-  // testEnvironment: "jest-environment-jsdom-fourteen",
-  testRegex: "src/__tests__/.+?\\.test\\.js$",
+  testEnvironment: "jest-environment-jsdom-fourteen",
+  testRegex: "src/__tests__/.+?\\.test\\.[tj]s$",
   transform: {
     "^.+\\.js$": "babel-jest",
     "^.+\\.ts$": "<rootDir>/node_modules/babel-jest",
