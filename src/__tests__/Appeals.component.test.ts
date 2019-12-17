@@ -5,6 +5,7 @@ import CombinedChart from "../Appeals/combined-distributions.svelte";
 import { data, distributions } from "./test-utils";
 import AgeChart from "../Appeals/age-distribution.svelte";
 import GenderChart from "../Appeals/gender-distribution.svelte";
+import ImprovedTechChart from "../Appeals/improved-tech-distribution.svelte";
 
 const mockGetComputedTextLength = jest.fn();
 
@@ -58,6 +59,12 @@ it("renders age chart", () => {
 
 it("renders gender chart", () => {
   render(GenderChart, {
+    dataDistributions: distributions
+  });
+});
+
+it("renders improved tech chart chart", () => {
+  render(ImprovedTechChart, {
     dataDistributions: distributions
   });
 });

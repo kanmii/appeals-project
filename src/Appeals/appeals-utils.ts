@@ -156,7 +156,7 @@ export function computeDistributions(data: MappedData[]) {
   };
 }
 
-export function combinedChartInitD3() {
+export function initCombinedChartD3() {
   const margins = {
     top: 20,
     left: 80,
@@ -194,9 +194,9 @@ export function combinedChartInitD3() {
   };
 }
 
-export function computeCombinedBars(
+export function computeCombinedChartData(
   dataDistributions: ComputedDistribution,
-  d3Objects: CombinedChartD3Helpers
+  d3Objects: CombinedChartD3
 ) {
   const { combinedDistributions } = dataDistributions;
 
@@ -309,7 +309,7 @@ export function initBarChartD3() {
   return { barYScale, barXScaleBand, ordinalColorScale, xAxis, yAxis };
 }
 
-export function computeImprovedTechBarsAndData(
+export function computeImprovedTechChartData(
   dataDistributions: ComputedDistribution,
   d3Objects: BarChartD3
 ) {
@@ -396,7 +396,7 @@ export function computeImprovedTechBarsAndData(
 
 const totalAngle = Math.PI * 2;
 
-export function computeGenderCategoryArcsAndData(
+export function computeGenderDistributionChartData(
   dataDistribution: ComputedDistribution,
   d3Objects: ArcD3Objects
 ) {
@@ -443,7 +443,7 @@ export function computeGenderCategoryArcsAndData(
   return { genderDistributionData, genderDistributionArcs };
 }
 
-export function computeAgeDistributionArcsAndData(
+export function computeAgeDistributionChartData(
   dataDistribution: ComputedDistribution,
   d3Objects: ArcD3Objects
 ) {
@@ -505,7 +505,7 @@ export interface DistributionArc {
   };
 }
 
-export const arcD3Objects = {
+export const arcD3Objects: ArcD3Objects = {
   arcGenerator: d3Arc(),
   linearColorScale: d3ScaleLinear<string, string>().range([
     "#98abc5",
@@ -528,7 +528,7 @@ export interface ArcD3Objects {
       endAngle: number;
     }
   >;
-  linearColorScale: ScaleLinear<string[], string>;
+  linearColorScale: ScaleLinear<string, string>;
 }
 
 interface TechImprovementDatum {
@@ -545,7 +545,7 @@ interface BarChartD3 {
   yAxis: Axis<string>;
 }
 
-interface CombinedChartD3Helpers {
+interface CombinedChartD3 {
   topScaleLinear: ScaleLinear<number, number>;
   leftScaleBand: ScaleBand<string>;
   xAxisTop: Axis<

@@ -1,7 +1,7 @@
 <script>
   import { select as d3Select } from "d3-selection";
   import {
-    computeImprovedTechBarsAndData,
+    computeImprovedTechChartData,
     initBarChartD3,
     BAR_HEIGHT,
     BAR_MARGINS,
@@ -18,7 +18,7 @@
   export let dataDistributions = {};
 
   $: if (dataDistributions.dataReady) {
-    const bars = computeImprovedTechBarsAndData(dataDistributions, barD3Helpers);
+    const bars = computeImprovedTechChartData(dataDistributions, barD3Helpers);
     improvedTechBars = bars.improvedTechBars;
 
     const { xAxis, yAxis } = barD3Helpers;

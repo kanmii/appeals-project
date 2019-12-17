@@ -1,6 +1,6 @@
-<script context="module">
+<script type="text/typescript">
   import {
-    computeAgeDistributionArcsAndData,
+    computeAgeDistributionChartData,
     initialAgeDistributionData,
     PIE_TRANSLATE,
     DistributionArc,
@@ -8,15 +8,12 @@
     arcD3Objects
   } from "./appeals-utils";
 
-</script>
-
-<script type="text/typescript">
   export let dataDistributions = {} as ComputedDistribution;
-  export let ageDistributionArcs = [] as DistributionArc[];
-  export let ageDistributionData = initialAgeDistributionData;
+  let ageDistributionArcs = [] as DistributionArc[];
+  let ageDistributionData = initialAgeDistributionData;
 
   $: if (dataDistributions.dataReady) {
-    const arcsAndData = computeAgeDistributionArcsAndData(
+    const arcsAndData = computeAgeDistributionChartData(
       dataDistributions,
       arcD3Objects
     );
@@ -24,6 +21,7 @@
     ageDistributionArcs = arcsAndData.ageDistributionArcs;
     ageDistributionData = arcsAndData.ageDistributionData;
   }
+
 </script>
 
 <style>

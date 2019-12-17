@@ -1,6 +1,6 @@
 <script context="module">
   import {
-    computeGenderCategoryArcsAndData,
+    computeGenderDistributionChartData,
     initialGenderDistributionData,
     PIE_TRANSLATE,
     arcD3Objects
@@ -13,7 +13,7 @@
   export let genderDistributionData = initialGenderDistributionData;
 
   $: if (dataDistributions.dataReady) {
-    const arcsAndData = computeGenderCategoryArcsAndData(
+    const arcsAndData = computeGenderDistributionChartData(
       dataDistributions,
       arcD3Objects
     );

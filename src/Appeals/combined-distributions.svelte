@@ -1,15 +1,15 @@
 <script context="module">
   import { onMount } from "svelte";
   import {
-    computeCombinedBars,
-    combinedChartInitD3,
+    computeCombinedChartData,
+    initCombinedChartD3,
     combinedBarChartCustomLeftAxis,
     ComputedDistribution,
     CombinedChartData
   } from "./appeals-utils";
   import { select as d3Select } from "d3-selection";
 
-  const chartHelpers = combinedChartInitD3();
+  const chartHelpers = initCombinedChartD3();
   const { bandWidth, margins, dimensions } = chartHelpers;
 </script>
 
@@ -36,7 +36,7 @@
   });
 
   $: if (dataDistributions.dataReady) {
-    bars = computeCombinedBars(dataDistributions, chartHelpers);
+    bars = computeCombinedChartData(dataDistributions, chartHelpers);
     renderAxis();
   }
 
