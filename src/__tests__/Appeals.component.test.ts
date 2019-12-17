@@ -3,6 +3,8 @@ import { render, wait } from "@testing-library/svelte";
 import Appeals from "../Appeals/appeals.svelte";
 import CombinedChart from "../Appeals/combined-distributions.svelte";
 import { data, distributions } from "./test-utils";
+import AgeChart from "../Appeals/age-distribution.svelte";
+import GenderChart from "../Appeals/gender-distribution.svelte";
 
 const mockGetComputedTextLength = jest.fn();
 
@@ -41,9 +43,21 @@ it("renders combined chart", () => {
 
   mockGetComputedTextLength
     .mockReturnValue(maxTextLen)
-    .mockReturnValueOnce(maxTextLen + 2)
+    .mockReturnValueOnce(maxTextLen + 2);
 
   render(CombinedChart, {
+    dataDistributions: distributions
+  });
+});
+
+it("renders age chart", () => {
+  render(AgeChart, {
+    dataDistributions: distributions
+  });
+});
+
+it("renders gender chart", () => {
+  render(GenderChart, {
     dataDistributions: distributions
   });
 });

@@ -8,17 +8,17 @@
 </script>
 
 <main>
-  <Appeals let:dataDistributions let:d3Helpers fetchDataFn={getCSVData}>
+  <Appeals let:dataDistributions fetchDataFn={getCSVData}>
     <div slot="combinedDistributions">
       <CombinedDistributions {dataDistributions} />
     </div>
 
     <div slot="genderDistribution">
-      <GenderDistribution {dataDistributions} {d3Helpers} />
+      <GenderDistribution {dataDistributions} />
     </div>
 
     <div slot="ageDistribution">
-      <AgeDistribution {dataDistributions} {d3Helpers} />
+      <AgeDistribution {dataDistributions} />
     </div>
 
     <div slot="improvedTechDistribution">

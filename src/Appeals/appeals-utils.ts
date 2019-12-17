@@ -12,7 +12,7 @@ import {
   ScaleBand,
   ScaleOrdinal
 } from "d3-scale";
-import { stack as d3Stack, Arc } from "d3-shape";
+import { stack as d3Stack, Arc, arc as d3Arc } from "d3-shape";
 import { GENDER_FEMALE_DATA, MappedData } from "./appeals-injectables";
 import { max as d3Max } from "d3-array";
 import { select as d3Select } from "d3-selection";
@@ -196,11 +196,11 @@ export function combinedChartInitD3() {
 
 export function computeCombinedBars(
   dataDistributions: ComputedDistribution,
-  chartHelpers: CombinedChartD3Helpers
+  d3Objects: CombinedChartD3Helpers
 ) {
   const { combinedDistributions } = dataDistributions;
 
-  const { topScaleLinear, leftScaleBand } = chartHelpers;
+  const { topScaleLinear, leftScaleBand } = d3Objects;
 
   topScaleLinear.domain([0, d3Max(Object.values(combinedDistributions))]);
 
@@ -291,7 +291,7 @@ export function combinedBarChartCustomLeftAxis(
     });
 }
 
-export function getBarD3Helpers() {
+export function initBarChartD3() {
   const barYScale = d3ScaleLinear().range([BAR_HEIGHT, 0]);
 
   const barXScaleBand = d3ScaleBand()
@@ -311,9 +311,9 @@ export function getBarD3Helpers() {
 
 export function computeImprovedTechBarsAndData(
   dataDistributions: ComputedDistribution,
-  barHelpers: BarD3Helpers
+  d3Objects: BarChartD3
 ) {
-  const { barYScale, barXScaleBand, ordinalColorScale } = barHelpers;
+  const { barYScale, barXScaleBand, ordinalColorScale } = d3Objects;
 
   const {
     improvedTechFemaleCount,
@@ -398,10 +398,10 @@ const totalAngle = Math.PI * 2;
 
 export function computeGenderCategoryArcsAndData(
   dataDistribution: ComputedDistribution,
-  helpers: ArcD3Helpers
+  d3Objects: ArcD3Objects
 ) {
   const { femaleCount, maleCount, totalBeneficiaries } = dataDistribution;
-  const { arcGenerator, linearColorScale } = helpers;
+  const { arcGenerator, linearColorScale } = d3Objects;
 
   linearColorScale.domain([maleCount, femaleCount]);
 
@@ -445,7 +445,7 @@ export function computeGenderCategoryArcsAndData(
 
 export function computeAgeDistributionArcsAndData(
   dataDistribution: ComputedDistribution,
-  helpers: ArcD3Helpers
+  d3Objects: ArcD3Objects
 ) {
   const {
     youthCount,
@@ -454,7 +454,7 @@ export function computeAgeDistributionArcsAndData(
     totalBeneficiaries
   } = dataDistribution;
 
-  const { linearColorScale, arcGenerator } = helpers;
+  const { linearColorScale, arcGenerator } = d3Objects;
   linearColorScale.domain([youthCount, adultCount]);
 
   let startAngle = 0;
@@ -505,9 +505,20 @@ export interface DistributionArc {
   };
 }
 
+export const arcD3Objects = {
+  arcGenerator: d3Arc(),
+  linearColorScale: d3ScaleLinear<string, string>().range([
+    "#98abc5",
+    "#8a89a6",
+    "#7b6888",
+    "#6b486b",
+    "#a05d56"
+  ])
+};
+
 ////////////////////////// TYPES ////////////////////////////
 
-export interface ArcD3Helpers {
+export interface ArcD3Objects {
   arcGenerator: Arc<
     unknown,
     {
@@ -526,7 +537,7 @@ interface TechImprovementDatum {
   [FEMALE_LABEL]: number;
 }
 
-interface BarD3Helpers {
+interface BarChartD3 {
   barYScale: ScaleLinear<number, number>;
   barXScaleBand: ScaleBand<string>;
   ordinalColorScale: ScaleOrdinal<string, unknown>;

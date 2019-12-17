@@ -1,22 +1,24 @@
-<script type="text/typescript">
+<script context="module">
   import {
     computeAgeDistributionArcsAndData,
     initialAgeDistributionData,
     PIE_TRANSLATE,
-    ArcD3Helpers,
     DistributionArc,
-    ComputedDistribution
+    ComputedDistribution,
+    arcD3Objects
   } from "./appeals-utils";
 
+</script>
+
+<script type="text/typescript">
   export let dataDistributions = {} as ComputedDistribution;
-  export let d3Helpers = {} as ArcD3Helpers;
   export let ageDistributionArcs = [] as DistributionArc[];
   export let ageDistributionData = initialAgeDistributionData;
 
   $: if (dataDistributions.dataReady) {
     const arcsAndData = computeAgeDistributionArcsAndData(
       dataDistributions,
-      d3Helpers
+      arcD3Objects
     );
 
     ageDistributionArcs = arcsAndData.ageDistributionArcs;

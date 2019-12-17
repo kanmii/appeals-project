@@ -1,19 +1,22 @@
-<script>
+<script context="module">
   import {
     computeGenderCategoryArcsAndData,
     initialGenderDistributionData,
-    PIE_TRANSLATE
+    PIE_TRANSLATE,
+    arcD3Objects
   } from "./appeals-utils";
-  import { arc as d3Arc } from "d3-shape";
+</script>
 
-
+<script>
   export let dataDistributions = {};
   export let genderDistributionArcs = [];
   export let genderDistributionData = initialGenderDistributionData;
-  export let d3Helpers;
 
   $: if (dataDistributions.dataReady) {
-    const arcsAndData = computeGenderCategoryArcsAndData(dataDistributions, d3Helpers);
+    const arcsAndData = computeGenderCategoryArcsAndData(
+      dataDistributions,
+      arcD3Objects
+    );
 
     genderDistributionArcs = arcsAndData.genderDistributionArcs;
     genderDistributionData = arcsAndData.genderDistributionData;
@@ -23,20 +26,12 @@
 <div class="chart-container gender-distribution">
   <svg width="500" height="500">
     <g transform="translate({PIE_TRANSLATE},{PIE_TRANSLATE})">
-    {#each genderDistributionArcs as { arcProps, labelProps:{x, y, labelText} }}
+      {#each genderDistributionArcs as { arcProps, labelProps: { x, y, labelText } }}
         <path {...arcProps} stroke="white" />
 
-        <text
-          class="outline"
-          text-anchor="middle"
-          x={x}
-          y={y}>
-          {labelText}
-        </text>
+        <text class="outline" text-anchor="middle" {x} {y}>{labelText}</text>
 
-        <text x={x} y={y} text-anchor="middle">
-          {labelText}
-        </text>
+        <text {x} {y} text-anchor="middle">{labelText}</text>
       {/each}
     </g>
   </svg>

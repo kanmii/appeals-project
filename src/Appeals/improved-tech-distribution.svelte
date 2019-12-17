@@ -2,14 +2,14 @@
   import { select as d3Select } from "d3-selection";
   import {
     computeImprovedTechBarsAndData,
-    getBarD3Helpers,
+    initBarChartD3,
     BAR_HEIGHT,
     BAR_MARGINS,
     BAR_SVG_WIDTH,
     BAR_SVG_HEIGHT
   } from "./appeals-utils";
 
-  const barD3Helpers = getBarD3Helpers();
+  const barD3Helpers = initBarChartD3();
 
   let improvedTechBarsXAxisContainerDom;
   let improvedTechBarsYAxisContainerDom;

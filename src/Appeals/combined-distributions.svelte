@@ -59,7 +59,6 @@
   }
 </script>
 
-cr
 <svg
   class="combined-charts"
   width={dimensions.svgWidth}

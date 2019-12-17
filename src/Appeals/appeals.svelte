@@ -3,19 +3,7 @@
   import { headerMapping } from "./appeals-injectables";
   import { computeDistributions } from "./appeals-utils";
   import { scaleLinear as d3ScaleLinear } from "d3-scale";
-  import { arc as d3Arc } from "d3-shape";
   import { getCSVData } from "./appeals-injectables";
-
-  const d3Helpers = {
-    arcGenerator: d3Arc(),
-    linearColorScale: d3ScaleLinear<string, string>().range([
-      "#98abc5",
-      "#8a89a6",
-      "#7b6888",
-      "#6b486b",
-      "#a05d56"
-    ])
-  };
 
   let data = [];
   let dataDistributions = {
@@ -118,9 +106,9 @@
 
   <slot name="combinedDistributions" {dataDistributions} />
 
-  <slot name="genderDistribution" {dataDistributions} {d3Helpers} />
+  <slot name="genderDistribution" {dataDistributions} />
 
-  <slot name="ageDistribution" {dataDistributions} {d3Helpers} />
+  <slot name="ageDistribution" {dataDistributions} />
 
   <slot name="improvedTechDistribution" {dataDistributions} />
 </div>
