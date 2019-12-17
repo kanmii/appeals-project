@@ -4,12 +4,19 @@ import Appeals from "../Appeals/appeals.svelte";
 import CombinedChart from "../Appeals/combined-distributions.svelte";
 import { data, distributions } from "./test-utils";
 
-beforeEach(() => {
-  (window.SVGElement.prototype as any).getComputedTextLength = () => 200;
+const mockGetComputedTextLength = jest.fn();
+
+beforeAll(() => {
+  (window.SVGElement
+    .prototype as any).getComputedTextLength = mockGetComputedTextLength;
+});
+
+afterAll(() => {
+  delete (window.SVGElement.prototype as any).getComputedTextLength;
 });
 
 afterEach(() => {
-  delete (window.SVGElement.prototype as any).getComputedTextLength;
+  mockGetComputedTextLength.mockReset();
 });
 
 it("renders component without data", () => {
@@ -30,6 +37,12 @@ it("renders component with data", async () => {
 });
 
 it("renders combined chart", () => {
+  const maxTextLen = 10 * 5; // font-size = 10px, 10 * 5 = 5em
+
+  mockGetComputedTextLength
+    .mockReturnValue(maxTextLen)
+    .mockReturnValueOnce(maxTextLen + 2)
+
   render(CombinedChart, {
     dataDistributions: distributions
   });

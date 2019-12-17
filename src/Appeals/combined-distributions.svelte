@@ -1,20 +1,19 @@
-<script type="text/typescript">
+<script context="module">
   import { onMount } from "svelte";
   import {
-    COMBINED_BAR_CONTAINER_WIDTH,
-    COMBINED_BAR_CONTAINER_HEIGHT,
     computeCombinedBars,
-    combinedBarChartInitD3,
+    combinedChartInitD3,
     combinedBarChartCustomLeftAxis,
     ComputedDistribution,
     CombinedChartData
   } from "./appeals-utils";
-
   import { select as d3Select } from "d3-selection";
 
-  const chartHelpers = combinedBarChartInitD3();
-  const { bandWidth, margins } = chartHelpers;
+  const chartHelpers = combinedChartInitD3();
+  const { bandWidth, margins, dimensions } = chartHelpers;
+</script>
 
+<script type="text/typescript">
   let bars = {
     bars: []
   } as CombinedChartData;
@@ -60,10 +59,11 @@
   }
 </script>
 
+cr
 <svg
   class="combined-charts"
-  width={COMBINED_BAR_CONTAINER_WIDTH}
-  height={COMBINED_BAR_CONTAINER_HEIGHT}>
+  width={dimensions.svgWidth}
+  height={dimensions.svgHeight}>
   <g
     bind:this={leftAxisDomRef}
     transform="translate({margins.left},{margins.top})" />

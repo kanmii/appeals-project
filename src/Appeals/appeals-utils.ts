@@ -2,20 +2,20 @@ import {
   axisTop as d3AxisTop,
   axisBottom as d3AxisBottom,
   axisLeft as d3AxisLeft,
-  Axis,
-} from 'd3-axis';
+  Axis
+} from "d3-axis";
 import {
   scaleBand as d3ScaleBand,
   scaleLinear as d3ScaleLinear,
   scaleOrdinal as d3ScaleOrdinal,
   ScaleLinear,
   ScaleBand,
-  ScaleOrdinal,
-} from 'd3-scale';
-import { stack as d3Stack, Arc } from 'd3-shape';
-import { GENDER_FEMALE_DATA, MappedData } from './appeals-injectables';
-import { max as d3Max } from 'd3-array';
-import { select as d3Select } from 'd3-selection';
+  ScaleOrdinal
+} from "d3-scale";
+import { stack as d3Stack, Arc } from "d3-shape";
+import { GENDER_FEMALE_DATA, MappedData } from "./appeals-injectables";
+import { max as d3Max } from "d3-array";
+import { select as d3Select } from "d3-selection";
 
 export const BAR_HEIGHT = 400;
 export const BAR_WIDTH = 400;
@@ -23,23 +23,22 @@ export const BAR_MARGINS = {
   top: 20,
   left: 50,
   right: 30,
-  bottom: 20,
+  bottom: 20
 };
 
 export const BAR_SVG_WIDTH = BAR_WIDTH + BAR_MARGINS.top + BAR_MARGINS.bottom;
 export const BAR_SVG_HEIGHT = BAR_HEIGHT + BAR_MARGINS.left + BAR_MARGINS.right;
 
-const FEMALE_LABEL = 'Female';
-const MALE_LABEL = 'Male';
-const YOUTH_LABEL = 'Youth';
-const ADULT_LABEL = 'Adult';
-const CHILDREN_LABEL = 'Children';
-const RECEIVED_ASSETS_LABEL = 'Received Assets';
-const NO_RECEIVED_ASSETS_LABEL = 'No Received Assets';
-const RECEIVED_TRAINING_LABEL = 'Received Training';
-const NO_RECEIVED_TRAINING_LABEL = 'No Received Training';
-const IMPROVED_TECH_LABEL = 'Improved Tech';
-const NO_IMPROVED_TECH_LABEL = 'Non Improved Tech';
+const FEMALE_LABEL = "Female";
+const MALE_LABEL = "Male";
+const YOUTH_LABEL = "Youth";
+const ADULT_LABEL = "Adult";
+const RECEIVED_ASSETS_LABEL = "Received Assets";
+const NO_RECEIVED_ASSETS_LABEL = "No Received Assets";
+const RECEIVED_TRAINING_LABEL = "Received Training";
+const NO_RECEIVED_TRAINING_LABEL = "No Received Training";
+const IMPROVED_TECH_LABEL = "Improved Tech";
+const NO_IMPROVED_TECH_LABEL = "Non Improved Tech";
 
 export const COMBINED_DISTRIBUTION_LABELS_LIST: (keyof CombinedDistribution)[] = [
   FEMALE_LABEL,
@@ -51,7 +50,7 @@ export const COMBINED_DISTRIBUTION_LABELS_LIST: (keyof CombinedDistribution)[] =
   RECEIVED_ASSETS_LABEL,
   NO_RECEIVED_ASSETS_LABEL,
   IMPROVED_TECH_LABEL,
-  NO_IMPROVED_TECH_LABEL,
+  NO_IMPROVED_TECH_LABEL
 ];
 
 export const PIE_TRANSLATE = 250;
@@ -59,14 +58,13 @@ export const PIE_LABEL_OFFSET = 50;
 
 export const initialGenderDistributionData = [FEMALE_LABEL, MALE_LABEL].reduce(
   (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
-  {},
+  {}
 );
 
-export const initialAgeDistributionData = [
-  YOUTH_LABEL,
-  ADULT_LABEL,
-  CHILDREN_LABEL,
-].reduce((acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }), {});
+export const initialAgeDistributionData = [YOUTH_LABEL, ADULT_LABEL].reduce(
+  (acc, l) => ({ ...acc, [l]: { count: 0, percent: 0 } }),
+  {}
+);
 
 export function computeDistributions(data: MappedData[]) {
   let improvedTechFemaleCount = 0;
@@ -80,7 +78,6 @@ export function computeDistributions(data: MappedData[]) {
   /* age distribution */
   let youthCount = 0;
   let adultCount = 0;
-  let childrenCount = 0;
   let receivedAssetsCount = 0;
   let receivedTrainingCount = 0;
 
@@ -103,10 +100,7 @@ export function computeDistributions(data: MappedData[]) {
         ++totalImprovedTech;
       }
 
-      if (age < 18) {
-        ++childrenCount;
-        acc[CHILDREN_LABEL].push(d);
-      } else if (age < 41) {
+      if (age < 41) {
         ++youthCount;
         acc[YOUTH_LABEL].push(d);
       } else {
@@ -130,9 +124,8 @@ export function computeDistributions(data: MappedData[]) {
     },
     {
       [YOUTH_LABEL]: [],
-      [ADULT_LABEL]: [],
-      [CHILDREN_LABEL]: [],
-    } as AgeDistributionMap,
+      [ADULT_LABEL]: []
+    } as AgeDistributionMap
   );
 
   const maleCount = totalBeneficiaries - femaleCount;
@@ -147,7 +140,7 @@ export function computeDistributions(data: MappedData[]) {
     [RECEIVED_ASSETS_LABEL]: receivedAssetsCount,
     [NO_RECEIVED_ASSETS_LABEL]: totalBeneficiaries - receivedAssetsCount,
     [RECEIVED_TRAINING_LABEL]: receivedTrainingCount,
-    [NO_RECEIVED_TRAINING_LABEL]: totalBeneficiaries - receivedTrainingCount,
+    [NO_RECEIVED_TRAINING_LABEL]: totalBeneficiaries - receivedTrainingCount
   };
 
   return {
@@ -157,28 +150,25 @@ export function computeDistributions(data: MappedData[]) {
     improvedTechFemaleCount,
     youthCount,
     adultCount,
-    childrenCount,
     totalBeneficiaries,
     dataReady: true,
-    combinedDistributions,
+    combinedDistributions
   };
 }
 
-export const COMBINED_BAR_CONTAINER_WIDTH = 800;
-export const COMBINED_BAR_CONTAINER_HEIGHT = 500;
-
-export function combinedBarChartInitD3() {
+export function combinedChartInitD3() {
   const margins = {
     top: 20,
     left: 80,
     right: 30,
-    bottom: 20,
+    bottom: 20
   };
-  const chartHeight =
-    COMBINED_BAR_CONTAINER_HEIGHT - margins.top - margins.bottom;
 
-  const chartWidth =
-    COMBINED_BAR_CONTAINER_WIDTH - margins.left - margins.right;
+  const svgWidth = 800;
+  const svgHeight = 500;
+
+  const chartHeight = svgHeight - margins.top - margins.bottom;
+  const chartWidth = svgWidth - margins.left - margins.right;
 
   const topScaleLinear = d3ScaleLinear().range([0, chartWidth]);
 
@@ -191,31 +181,22 @@ export function combinedBarChartInitD3() {
   const yAxisLeft = d3AxisLeft(leftScaleBand);
 
   return {
-    chartHeight,
     topScaleLinear,
     leftScaleBand,
     xAxisTop,
     yAxisLeft,
-    chartWidth,
     bandWidth: leftScaleBand.bandwidth(),
     margins,
+    dimensions: {
+      svgWidth,
+      svgHeight
+    }
   };
-}
-
-interface CombinedChartDatum {
-  barProps: {
-    y: number;
-    width: number;
-  };
-}
-
-export interface CombinedChartData {
-  bars: CombinedChartDatum[];
 }
 
 export function computeCombinedBars(
   dataDistributions: ComputedDistribution,
-  chartHelpers: CombinedChartD3Helpers,
+  chartHelpers: CombinedChartD3Helpers
 ) {
   const { combinedDistributions } = dataDistributions;
 
@@ -230,10 +211,10 @@ export function computeCombinedBars(
       return {
         barProps: {
           y,
-          width: topScaleLinear(combinedDistributions[label]),
-        },
+          width: topScaleLinear(combinedDistributions[label])
+        }
       };
-    },
+    }
   );
 
   return { bars };
@@ -241,73 +222,72 @@ export function computeCombinedBars(
 
 export function combinedBarChartCustomLeftAxis(
   leftAxisDomRef: SVGGElement,
-  d3YAxisLeft: Axis<string>,
+  d3YAxisLeft: Axis<string>
 ) {
   const lineHeightEm = 1.2;
   const halfLineHeightEm = lineHeightEm / 2;
 
   const d3SelectedLeftAxis = d3Select<SVGGElement, string>(leftAxisDomRef).call(
-    d3YAxisLeft,
+    d3YAxisLeft
   );
 
-  const fontSizePixel = parseFloat(d3SelectedLeftAxis.attr('font-size'));
+  const fontSizePixel = parseFloat(d3SelectedLeftAxis.attr("font-size"));
   const maxTextLen = fontSizePixel * 5; // 5em
 
   d3SelectedLeftAxis
-    .selectAll<SVGElement, string>('.tick text')
+    .selectAll<SVGElement, string>(".tick text")
     .each(function(label: string) {
       const svgNodeText = this;
 
-      svgNodeText.textContent = '';
-      const x = svgNodeText.getAttribute('x') as string;
+      svgNodeText.textContent = "";
+      const x = svgNodeText.getAttribute("x") as string;
 
-      let word = '';
+      let word = "";
 
       let wordsLine: string[] = [];
       const words = label.split(/\s+/).reverse();
 
       let svgNodeTSpan = svgNodeText.appendChild(
-        document.createElementNS('http://www.w3.org/2000/svg', 'tspan'),
+        document.createElementNS("http://www.w3.org/2000/svg", "tspan")
       );
 
-      svgNodeTSpan.setAttribute('x', x);
-      svgNodeTSpan.setAttribute('dy', svgNodeText.getAttribute('dy') as string);
+      const dyNumberEm = parseFloat(
+        (/[\d.]+/.exec(svgNodeText.getAttribute("dy") as string) as string[])[0]
+      );
+      svgNodeText.removeAttribute("dy");
 
-      svgNodeText.removeAttribute('dy');
+      svgNodeTSpan.setAttribute("x", x);
+      svgNodeTSpan.setAttribute("dy", `${dyNumberEm}em`);
+
+      let lineNumber = 0;
 
       while ((word = words.pop() as string)) {
         wordsLine.push(word);
-        svgNodeTSpan.textContent = wordsLine.join(' ');
+        svgNodeTSpan.textContent = wordsLine.join(" ");
 
         if (svgNodeTSpan.getComputedTextLength() > maxTextLen) {
           wordsLine.pop();
-          svgNodeTSpan.textContent = wordsLine.join(' ');
+          svgNodeTSpan.textContent = wordsLine.join(" ");
           wordsLine = [word];
 
           const firstSvgNodeTSpan = svgNodeText.firstElementChild as SVGTextElement;
 
-          const dyNumberEm = parseFloat(
-            (/[\d.]+/.exec(
-              firstSvgNodeTSpan.getAttribute('dy') as string,
-            ) as string[])[0],
-          );
-
           firstSvgNodeTSpan.setAttribute(
-            'dy',
-            `${dyNumberEm - halfLineHeightEm}em`,
+            "dy",
+            `${dyNumberEm - ++lineNumber * halfLineHeightEm}em`
           );
 
           svgNodeTSpan = svgNodeText.appendChild(
-            document.createElementNS('http://www.w3.org/2000/svg', 'tspan'),
+            document.createElementNS("http://www.w3.org/2000/svg", "tspan")
           );
 
-          svgNodeTSpan.setAttribute('x', x);
-          svgNodeTSpan.setAttribute('dy', `${lineHeightEm}em`);
+          svgNodeTSpan.setAttribute("x", x);
+          svgNodeTSpan.setAttribute("dy", `${lineHeightEm}em`);
           svgNodeTSpan.textContent = word;
         }
       }
 
-      svgNodeText.style.fontWeight = 'bold';
+      svgNodeText.style.fontWeight = "bold";
     });
 }
 
@@ -321,7 +301,7 @@ export function getBarD3Helpers() {
 
   const ordinalColorScale = d3ScaleOrdinal()
     .domain([FEMALE_LABEL, MALE_LABEL])
-    .range(['#e41a1c', '#377eb8', '#4daf4a']);
+    .range(["#e41a1c", "#377eb8", "#4daf4a"]);
 
   const xAxis = d3AxisBottom(barXScaleBand);
   const yAxis = d3AxisLeft(barYScale);
@@ -331,7 +311,7 @@ export function getBarD3Helpers() {
 
 export function computeImprovedTechBarsAndData(
   dataDistributions: ComputedDistribution,
-  barHelpers: BarD3Helpers,
+  barHelpers: BarD3Helpers
 ) {
   const { barYScale, barXScaleBand, ordinalColorScale } = barHelpers;
 
@@ -340,7 +320,7 @@ export function computeImprovedTechBarsAndData(
     improvedTechMaleCount,
     totalBeneficiaries,
     femaleCount,
-    maleCount,
+    maleCount
   } = dataDistributions;
 
   barYScale.domain([0, totalBeneficiaries]);
@@ -349,13 +329,13 @@ export function computeImprovedTechBarsAndData(
     {
       improvementCategory: IMPROVED_TECH_LABEL,
       [MALE_LABEL]: improvedTechMaleCount,
-      [FEMALE_LABEL]: improvedTechFemaleCount,
+      [FEMALE_LABEL]: improvedTechFemaleCount
     },
     {
       improvementCategory: NO_IMPROVED_TECH_LABEL,
       [MALE_LABEL]: maleCount - improvedTechMaleCount,
-      [FEMALE_LABEL]: femaleCount - improvedTechFemaleCount,
-    },
+      [FEMALE_LABEL]: femaleCount - improvedTechFemaleCount
+    }
   ];
 
   const improvedTechBars: {
@@ -398,13 +378,13 @@ export function computeImprovedTechBarsAndData(
           y: yTop,
           height,
           width,
-          fill: ordinalColorScale(key) as string,
+          fill: ordinalColorScale(key) as string
         };
 
         const textProps = {
           attrs: { x: x + width / 2, y: yTop + height / 2 },
 
-          text: key,
+          text: key
         };
 
         improvedTechBars.push({ bar, textProps, key: x + key });
@@ -418,7 +398,7 @@ const totalAngle = Math.PI * 2;
 
 export function computeGenderCategoryArcsAndData(
   dataDistribution: ComputedDistribution,
-  helpers: ArcD3Helpers,
+  helpers: ArcD3Helpers
 ) {
   const { femaleCount, maleCount, totalBeneficiaries } = dataDistribution;
   const { arcGenerator, linearColorScale } = helpers;
@@ -433,7 +413,7 @@ export function computeGenderCategoryArcsAndData(
 
   const genderDistributionArcs = ([
     [femaleCount, FEMALE_LABEL],
-    [maleCount, MALE_LABEL],
+    [maleCount, MALE_LABEL]
   ] as [number, keyof typeof genderDistributionData][])
     .filter(([count]) => count > 0)
     .map(([count, label]) => {
@@ -445,7 +425,7 @@ export function computeGenderCategoryArcsAndData(
         innerRadius: 0,
         outerRadius: 220,
         startAngle: startAngle,
-        endAngle: startAngle += fraction * totalAngle,
+        endAngle: startAngle += fraction * totalAngle
       };
 
       const [labelX, labelY] = arcGenerator.centroid(arcOption);
@@ -455,8 +435,8 @@ export function computeGenderCategoryArcsAndData(
         labelProps: {
           x: labelX,
           y: labelY,
-          labelText: `${label} (${percent}%)`,
-        },
+          labelText: `${label} (${percent}%)`
+        }
       };
     });
 
@@ -465,13 +445,13 @@ export function computeGenderCategoryArcsAndData(
 
 export function computeAgeDistributionArcsAndData(
   dataDistribution: ComputedDistribution,
-  helpers: ArcD3Helpers,
+  helpers: ArcD3Helpers
 ) {
   const {
     youthCount,
     adultCount,
     childrenCount,
-    totalBeneficiaries,
+    totalBeneficiaries
   } = dataDistribution;
 
   const { linearColorScale, arcGenerator } = helpers;
@@ -483,7 +463,7 @@ export function computeAgeDistributionArcsAndData(
   const ageDistributionArcs: DistributionArc[] = ([
     [youthCount, YOUTH_LABEL],
     [adultCount, ADULT_LABEL],
-    [childrenCount, CHILDREN_LABEL],
+    [childrenCount]
   ] as [number, keyof AgeDistributionMap][])
     .filter(([count]) => count > 0)
     .map(([count, label]) => {
@@ -495,7 +475,7 @@ export function computeAgeDistributionArcsAndData(
         innerRadius: 0,
         outerRadius: 150,
         startAngle: startAngle,
-        endAngle: startAngle += fraction * totalAngle,
+        endAngle: startAngle += fraction * totalAngle
       };
 
       const [labelX, labelY] = arcGenerator.centroid(arcOption);
@@ -505,8 +485,8 @@ export function computeAgeDistributionArcsAndData(
         labelProps: {
           x: labelX,
           y: labelY,
-          labelText: `${label} (${percent}%)`,
-        },
+          labelText: `${label} (${percent}%)`
+        }
       };
     });
 
@@ -555,7 +535,6 @@ interface BarD3Helpers {
 }
 
 interface CombinedChartD3Helpers {
-  chartHeight: number;
   topScaleLinear: ScaleLinear<number, number>;
   leftScaleBand: ScaleBand<string>;
   xAxisTop: Axis<
@@ -565,15 +544,17 @@ interface CombinedChartD3Helpers {
       }
   >;
   yAxisLeft: Axis<string>;
-  chartWidth: number;
   bandWidth: number;
   margins: {};
+  dimensions: {
+    svgWidth: number;
+    svgHeight: number;
+  };
 }
 
 interface AgeDistributionMap {
   [YOUTH_LABEL]: MappedData[];
   [ADULT_LABEL]: MappedData[];
-  [CHILDREN_LABEL]: MappedData[];
 }
 
 type KeyOfAgeDistributionMap = keyof AgeDistributionMap;
@@ -611,4 +592,15 @@ interface CombinedDistribution {
 interface DataCount {
   count: number;
   percent: string;
+}
+
+interface CombinedChartDatum {
+  barProps: {
+    y: number;
+    width: number;
+  };
+}
+
+export interface CombinedChartData {
+  bars: CombinedChartDatum[];
 }
