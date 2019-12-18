@@ -70,7 +70,7 @@ export function computeDistributions(data: MappedData[]) {
   let improvedTechFemaleCount = 0;
   let improvedTechMaleCount = 0;
   let totalBeneficiaries = 0;
-  let totalImprovedTech = 0;
+  let improvedTechCount = 0;
 
   // gender distribution
   let femaleCount = 0;
@@ -81,60 +81,73 @@ export function computeDistributions(data: MappedData[]) {
   let receivedAssetsCount = 0;
   let receivedTrainingCount = 0;
 
-  // ageDistributionMap
-  data.reduce(
-    (acc, d) => {
-      const { age, gender, improvedTech, receivedAssets, receivedTraining } = d;
+  data.forEach(d => {
+    const { age, gender, improvedTech, receivedAssets, receivedTraining } = d;
 
-      ++totalBeneficiaries;
+    ++totalBeneficiaries;
 
-      if (receivedAssets) {
-        ++receivedAssetsCount;
-      }
+    if (receivedAssets) {
+      ++receivedAssetsCount;
+    }
 
-      if (receivedTraining) {
-        ++receivedTrainingCount;
-      }
+    if (receivedTraining) {
+      ++receivedTrainingCount;
+    }
+
+    if (improvedTech) {
+      ++improvedTechCount;
+    }
+
+    if (age < 41) {
+      ++youthCount;
+    } else {
+      ++adultCount;
+    }
+
+    if (gender === GENDER_FEMALE_DATA) {
+      ++femaleCount;
 
       if (improvedTech) {
-        ++totalImprovedTech;
+        ++improvedTechFemaleCount;
       }
-
-      if (age < 41) {
-        ++youthCount;
-        acc[YOUTH_LABEL].push(d);
-      } else {
-        ++adultCount;
-        acc[ADULT_LABEL].push(d);
+    } else {
+      if (improvedTech) {
+        ++improvedTechMaleCount;
       }
-
-      if (gender === GENDER_FEMALE_DATA) {
-        ++femaleCount;
-
-        if (improvedTech) {
-          ++improvedTechFemaleCount;
-        }
-      } else {
-        if (improvedTech) {
-          ++improvedTechMaleCount;
-        }
-      }
-
-      return acc;
-    },
-    {
-      [YOUTH_LABEL]: [],
-      [ADULT_LABEL]: []
-    } as AgeDistributionMap
-  );
+    }
+  });
 
   const maleCount = totalBeneficiaries - femaleCount;
+
+  const noImprovedTechCount = totalBeneficiaries - improvedTechCount;
+
+  const noReceivedTrainingCount = totalBeneficiaries - receivedTrainingCount;
+
+  const noReceivedAssetCount = totalBeneficiaries - receivedAssetsCount;
+
+  const combinedDistributions1 = {
+    [FEMALE_LABEL]: {
+      count: femaleCount,
+      percent: getPercent(femaleCount, totalBeneficiaries)
+    },
+    [MALE_LABEL]: {
+      count: maleCount
+    },
+    [IMPROVED_TECH_LABEL]: improvedTechCount,
+    [NO_IMPROVED_TECH_LABEL]: noImprovedTechCount,
+    [YOUTH_LABEL]: youthCount,
+    [ADULT_LABEL]: adultCount,
+    [RECEIVED_ASSETS_LABEL]: receivedAssetsCount,
+    [NO_RECEIVED_ASSETS_LABEL]: noReceivedAssetCount,
+    [RECEIVED_TRAINING_LABEL]: receivedTrainingCount,
+    [NO_RECEIVED_TRAINING_LABEL]: noReceivedTrainingCount
+  };
 
   const combinedDistributions: CombinedDistribution = {
     [FEMALE_LABEL]: femaleCount,
     [MALE_LABEL]: maleCount,
-    [IMPROVED_TECH_LABEL]: totalImprovedTech,
-    [NO_IMPROVED_TECH_LABEL]: totalBeneficiaries - totalImprovedTech,
+    [IMPROVED_TECH_LABEL]: improvedTechCount,
+    [NO_IMPROVED_TECH_LABEL]: totalBeneficiaries - improvedTechCount,
     [YOUTH_LABEL]: youthCount,
     [ADULT_LABEL]: adultCount,
     [RECEIVED_ASSETS_LABEL]: receivedAssetsCount,
@@ -152,7 +165,8 @@ export function computeDistributions(data: MappedData[]) {
     adultCount,
     totalBeneficiaries,
     dataReady: true,
-    combinedDistributions
+    combinedDistributions,
+    combinedDistributions1
   };
 }
 
@@ -165,7 +179,7 @@ export function initCombinedChartD3() {
   };
 
   const svgWidth = 800;
-  const svgHeight = 500;
+  const svgHeight = 800;
 
   const chartHeight = svgHeight - margins.top - margins.bottom;
   const chartWidth = svgWidth - margins.left - margins.right;
@@ -208,10 +222,12 @@ export function computeCombinedChartData(
     label => {
       const y = leftScaleBand(label) as number;
 
+      const width = topScaleLinear(combinedDistributions[label]);
+
       return {
         barProps: {
           y,
-          width: topScaleLinear(combinedDistributions[label])
+          width
         }
       };
     }
@@ -231,7 +247,9 @@ export function combinedBarChartCustomLeftAxis(
     d3YAxisLeft
   );
 
-  const fontSizePixel = parseFloat(d3SelectedLeftAxis.attr("font-size"));
+  const fontSizePixel = parseFloat(
+    d3SelectedLeftAxis.attr("font-size", 14).attr("font-size")
+  );
   const maxTextLen = fontSizePixel * 5; // 5em
 
   d3SelectedLeftAxis
@@ -516,6 +534,9 @@ export const arcD3Objects: ArcD3Objects = {
   ])
 };
 
+function getPercent(part: number, whole: number) {
+  return (part / whole).toFixed(2);
+}
 ////////////////////////// TYPES ////////////////////////////
 
 export interface ArcD3Objects {
@@ -598,6 +619,49 @@ interface CombinedDistribution {
   [NO_RECEIVED_ASSETS_LABEL]: number;
   [RECEIVED_TRAINING_LABEL]: number;
   [NO_RECEIVED_TRAINING_LABEL]: number;
+}
+
+interface CombinedDistribution1 {
+  [FEMALE_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [MALE_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [IMPROVED_TECH_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [NO_IMPROVED_TECH_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [YOUTH_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [ADULT_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [RECEIVED_ASSETS_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [NO_RECEIVED_ASSETS_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [RECEIVED_TRAINING_LABEL]: {
+    count: number;
+    percent: number;
+  };
+  [NO_RECEIVED_TRAINING_LABEL]: {
+    count: number;
+    percent: number;
+  };
 }
 
 interface DataCount {
