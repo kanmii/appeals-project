@@ -39,7 +39,7 @@ it("renders component with data", async () => {
   await wait(() => true);
 });
 
-it("renders combined chart", () => {
+it("renders combined chart", async () => {
   const maxTextLen = 10 * 5; // font-size = 10px, 10 * 5 = 5em
 
   mockGetComputedTextLength
@@ -49,22 +49,30 @@ it("renders combined chart", () => {
   render(CombinedChart, {
     dataDistributions: distributions
   });
+
+  await wait(() => true);
 });
 
-it("renders age chart", () => {
+it("renders age chart", async () => {
   render(AgeChart, {
     dataDistributions: distributions
   });
+
+  await wait(() => true);
 });
 
-it("renders gender chart", () => {
+it("renders gender chart", async () => {
   render(GenderChart, {
     dataDistributions: distributions
   });
+
+  await wait(() => true);
 });
 
-it("renders improved tech chart chart", () => {
+it("renders improved tech chart chart", async () => {
   render(ImprovedTechChart, {
     dataDistributions: distributions
   });
+
+  await wait(() => true);
 });

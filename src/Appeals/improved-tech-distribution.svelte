@@ -14,8 +14,8 @@
   let improvedTechBarsXAxisContainerDom;
   let improvedTechBarsYAxisContainerDom;
 
-  export let improvedTechBars = [];
   export let dataDistributions = {};
+  export let improvedTechBars = [];
 
   $: if (dataDistributions.dataReady) {
     const bars = computeImprovedTechChartData(dataDistributions, barD3Helpers);

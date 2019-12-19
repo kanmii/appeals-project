@@ -6,6 +6,7 @@
   import { getCSVData } from "./appeals-injectables";
 
   let data = [];
+
   let dataDistributions = {
     maleCount: 0,
     femaleCount: 0,
@@ -13,7 +14,6 @@
     improvedTechFemaleCount: 0,
     youthCount: 0,
     adultCount: 0,
-    childrenCount: 0,
     totalBeneficiaries: 0,
     dataReady: false
   };

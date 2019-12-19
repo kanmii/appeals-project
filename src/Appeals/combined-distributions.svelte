@@ -1,4 +1,4 @@
-<script context="module">
+<script type="text/typescript">
   import { onMount } from "svelte";
   import {
     computeCombinedChartData,
@@ -11,9 +11,6 @@
 
   const chartHelpers = initCombinedChartD3();
   const { bandWidth, margins, dimensions } = chartHelpers;
-</script>
-
-<script type="text/typescript">
   let bars = {
     bars: []
   } as CombinedChartData;
@@ -72,8 +69,8 @@
     transform="translate({margins.left},{margins.top})" />
 
   <g transform="translate({margins.left},{margins.top})">
-    {#each bars.bars as { barProps } (barProps.y)}
-      <rect height={bandWidth} x="0" {...barProps} fill="blue" />
-    {/each}
+      {#each bars.bars as { barProps } (barProps.y)}
+        <rect height={bandWidth} x="0" {...barProps} fill="blue" />
+      {/each}
   </g>
 </svg>
